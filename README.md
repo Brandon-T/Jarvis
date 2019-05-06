@@ -173,9 +173,9 @@ let parameters = ["id": "something"]
 
 Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com", .custom(parameters, CustomEncoder()))) //Encodes parameters using the custom encoder
 .then { result in
-    print(result.data)
-    print(result.rawData)
-    print(result.response)
+    print(result.data) //A String (serialized response)
+    print(result.rawData) //Raw non-serialized data from the response
+    print(result.response) //A URLResponse
 }
 .catch { error in
     print(error)
@@ -220,9 +220,9 @@ Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com/getStr
 .retry(3) //The request will try a maximum of 3 times until it succeeds.. if it fails all 3 times, the catch block is called.
 //Otherwise the then block is called as soon as it succeeds..
 .then { result in
-    print(result.data)
-    print(result.rawData)
-    print(result.response)
+    print(result.data) //A String (serialized response)
+    print(result.rawData) //Raw non-serialized data from the response
+    print(result.response) //A URLResponse
 }
 .catch { error in //Catch an error for each request
     print(error)
