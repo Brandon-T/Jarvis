@@ -69,7 +69,109 @@ Client.default.configure(CustomConfiguration(baseURL: "https://example.com", hea
 
 Creating a request:
 ```Swift
-Client.default.task(endpoint: Endpoint<String>(.GET, "https://google.ca"))
+Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com"))
+.then { result in
+    print(result.data)
+    print(result.rawData)
+    print(result.response)
+}
+.catch { error in
+    print(error)
+}
+```
+
+Creating a request with query parameters:
+```Swift
+Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com", .query(["id": "something"]))) //Encodes parameters in the query string
+.then { result in
+    print(result.data)
+    print(result.rawData)
+    print(result.response)
+}
+.catch { error in
+    print(error)
+}
+```
+
+Creating a request with json body parameters:
+```Swift
+Client.default.task(endpoint: Endpoint<String>(.POST, "https://example.com", .json(["id": "something"]))) //Encodes parameters in the body as json
+.then { result in
+    print(result.data)
+    print(result.rawData)
+    print(result.response)
+}
+.catch { error in
+    print(error)
+}
+```
+
+Creating a request with raw data parameters:
+```Swift
+Client.default.task(endpoint: Endpoint<String>(.POST, "https://example.com", .data("Hello".data(using: .utf8)))) //Encodes parameters in the body as raw data/bytes
+.then { result in
+    print(result.data)
+    print(result.rawData)
+    print(result.response)
+}
+.catch { error in
+    print(error)
+}
+```
+
+Creating a request with Codable parameters:
+```Swift
+struct Parameters: Encodable {
+    let id: String
+}
+
+let parameters = Parameters(id: "something")
+
+Client.default.task(endpoint: Endpoint<String>(.POST, "https://example.com", .jsonCodable(parameters))) //Encodes parameters in the body as json
+.then { result in
+    print(result.data)
+    print(result.rawData)
+    print(result.response)
+}
+.catch { error in
+    print(error)
+}
+```
+
+Creating a request with Custom Codable parameters:
+```Swift
+struct Parameters: Encodable {
+    let id: String
+}
+
+let parameters = Parameters(id: "something")
+let encoder = JSONEncoder()
+
+Client.default.task(endpoint: Endpoint<String>(.POST, "https://example.com", .jsonCodable(parameters, encoder))) //Encodes parameters in the body as json
+.then { result in
+    print(result.data)
+    print(result.rawData)
+    print(result.response)
+}
+.catch { error in
+    print(error)
+}
+```
+
+Creating a request with Custom Encoding Parameters:
+```Swift
+struct CustomEncoder: RequestEncoder {
+    func encode<T>(_ urlRequest: URLRequest, with parameters: T) throws -> URLRequest {
+        var urlRequest = urlRequest
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters ?? [:], options: .prettyPrinted)
+        return urlRequest
+    }
+}
+
+let parameters = ["id": "something"]
+
+Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com", .custom(parameters, CustomEncoder()))) //Encodes parameters using the custom encoder
 .then { result in
     print(result.data)
     print(result.rawData)

@@ -11,7 +11,7 @@ import Foundation
 /// A URL request encoder protocol that allows custom encoding of a request's parameters
 public protocol RequestEncoder {
     /// Encodes the URLRequest with the parameters provided and returns the result
-    func encode<T>(_ urlRequest: URLRequest, with parameters: T?) throws -> URLRequest
+    func encode<T>(_ urlRequest: URLRequest, with parameters: T) throws -> URLRequest
 }
 
 #if !canImport(Alamofire)
