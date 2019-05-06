@@ -282,3 +282,36 @@ Client.default.requestInterceptor = BasicRequestInterceptor(
         }
 })
 ```
+
+Intercepting Requests:
+```Swift
+public class CustomRequestInterceptor<Token>: RequestInterceptor {
+    
+    public func willLaunchRequest<T>(_ request: URLRequest, for endpoint: Endpoint<T>) {
+        /// Request being launched.. Log it to the console..
+    }
+    
+    public func requestSucceeded<T>(_ request: URLRequest, for endpoint: Endpoint<T>, response: URLResponse) {
+        /// Request succeeded.. Log it to the console..
+    }
+    
+    public func requestFailed<T>(_ request: URLRequest, for endpoint: Endpoint<T>, error: Error, response: URLResponse?, completion: RequestCompletionPromise<RequestSuccess<T>>) {
+        /// Request failed.. Log it to the console..
+
+        ///MUST call either completion.reject(error) or completion.resolve(result)
+        completion.reject(error)
+
+        /// Can also handle session token renewal here or do something before rejecting or completion the request..
+        /// For example: Retrying the request
+
+        Client().task(endpoint).then {
+            completion.resolve($0)
+        }
+        .catch {
+            completion.reject($0)
+        }
+    }
+}
+
+Client.default.requestInterceptor = CustomRequestInterceptor()
+```
