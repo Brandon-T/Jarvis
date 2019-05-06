@@ -80,6 +80,27 @@ Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com"))
 }
 ```
 
+Creating a request with a specified queue:
+```Swift
+Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com"))
+.then(.global(.background)) { result in //This then block runs on a background queue
+    print(result.data)
+    print(result.rawData)
+    print(result.response)
+}
+.then(.main) { result in //This then block runs on the main queue
+    print(result.data)
+    print(result.rawData)
+    print(result.response)
+}
+.catch(.global(.background)) { error in //This catch block runs on a background queue
+    print(error)
+}
+.catch(.main) { error in //This catch block runs on the main queue
+    print(error)
+}
+```
+
 Creating a request with query parameters:
 ```Swift
 Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com", .query(["id": "something"]))) //Encodes parameters in the query string
