@@ -39,6 +39,15 @@ public enum EndpointParameter {
     /// Encodes the `Encodable` model to the request's query parameters
     case queryCodable(Encodable, JSONEncoder?)
     
+    /// Performs custom encoding on the parameters specified by the encoder block
+    case customData(_ parameters: Any, _ encoder: (Any) throws -> Data)
+    
+    /// Performs custom encoding on the parameters specified by the encoder block
+    case customQuery(_ parameters: Any, _ encoder: (Any) throws -> [String: Any])
+    
+    /// Performs custom encoding on the parameters specified by the encoder block
+    case customJSON(_ parameters: Any, _ encoder: (Any) throws -> [String: Any])
+    
     /// Performs custom encoding on the parameters specified by the encoder
     case custom(_ parameters: Any, _ encoder: RequestEncoder)
 }
@@ -130,6 +139,16 @@ public struct Endpoint<T> {
             case .queryCodable:
                 request = try URLEncoding.default.encode(request, with: parameters.queryCodable)
                 
+            case .customData(let parameters, let encoder):
+                request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+                request.httpBody = try encoder(parameters)
+                
+            case .customQuery(let parameters, let encoder):
+                request = try URLEncoding.default.encode(request, with: try encoder(parameters))
+                
+            case .customJSON(let parameters, let encoder):
+                request = try JSONEncoding.default.encode(request, with: try encoder(parameters))
+                
             case .custom(let parameters, let encoder):
                 request = try encoder.encode(request, with: parameters)
             }
@@ -173,6 +192,15 @@ public struct Endpoint<T> {
                 
             case .queryCodable:
                 request = try QueryURLEncoder.default.encode(request, with: parameters.queryCodable)
+                
+            case .customData(let parameters, let encoder):
+                request = try DataURLEncoder.default.encode(request, with: try encoder(parameters))
+                
+            case .customQuery(let parameters, let encoder):
+                request = try QueryURLEncoder.default.encode(request, with: try encoder(parameters))
+                
+            case .customJSON(let parameters, let encoder):
+                request = try JSONURLEncoder.default.encode(request, with: try encoder(parameters))
                 
             case .custom(let parameters, let encoder):
                 request = try encoder.encode(request, with: parameters)

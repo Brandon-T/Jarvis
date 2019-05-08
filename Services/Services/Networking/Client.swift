@@ -41,6 +41,11 @@ final public class Client: NSObject {
         super.init()
     }
     
+    public init(configuration: Configuration) {
+        super.init()
+        self.configure(configuration)
+    }
+    
     public func configure(_ configuration: Configuration) {
         self.configuration = configuration
     }

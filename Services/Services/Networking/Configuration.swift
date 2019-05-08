@@ -17,9 +17,9 @@ public class Configuration {
     private let headers: [String: String]
     
     //Access token for this configuration's requests
-    var accessToken: String?
+    public var accessToken: String?
     
-    init(baseURL: URL, headers: [String: String]) {
+    public init(baseURL: URL, headers: [String: String]) {
         self.baseURL = baseURL
         self.headers = headers
         self.accessToken = nil
