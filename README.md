@@ -257,7 +257,9 @@ Automatic Handling of Session Token Renewal:
 //When the session token is renewed, all requests are automatically retried.
 //If the session token renewal fails, all requests are cancelled and the queue is cleared.
 Client.default.requestInterceptor = BasicRequestInterceptor(
-    renewSession: Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com/refreshToken")), //The endpoint to call to renew the token 
+    renewSession: {
+        Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com/refreshToken")), //The endpoint to call to renew the token 
+    },
     onTokenRenewed: { client, token, error in
         
         if let token = token {
@@ -284,9 +286,10 @@ Automatic Handling of Session Token Renewal with a max amount of retries:
 Client.default.requestInterceptor = BasicRequestInterceptor(
 
     //The endpoint to call to renew the token 
-    renewSession: Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com/refreshToken")).retry(3), //Retry the renewal of tokens up to 3 times..
+    renewSession: {
+        Client.default.task(endpoint: Endpoint<String>(.GET, "https://example.com/refreshToken")).retry(3), //Retry the renewal of tokens up to 3 times..
     //If all 3 retries fail, the queued requests are cancelled and the queue is cleared.
-
+    },
     onTokenRenewed: { client, token, error in
         
         if let token = token {
