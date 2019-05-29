@@ -18,7 +18,7 @@ public class BasicRequestInterceptor<Token>: RequestInterceptor {
     private var currentRenewTokenRequest: Request<Token>?
     
     private var tasks = [DispatchWorkItem]()
-    private let renewSession: (() -> Request<Token>?)?
+    private let renewSession: (() -> Request<Token>)?
     public weak var client: Client?
     private let onTokenRenewed: ((_ client: Client?, _ token: Token?, _ error: Error?) -> Void)?
     
@@ -30,7 +30,7 @@ public class BasicRequestInterceptor<Token>: RequestInterceptor {
     }
     
     /// Initialize an interceptor that requires session token handling..
-    public init(renewSession: @escaping @autoclosure () -> Request<Token>?, onTokenRenewed: @escaping (_ client: Client?, _ token: Token?, _ error: Error?) -> Void) {
+    public init(renewSession: @escaping () -> Request<Token>, onTokenRenewed: @escaping (_ client: Client?, _ token: Token?, _ error: Error?) -> Void) {
         self.renewSession = renewSession
         self.onTokenRenewed = onTokenRenewed
         self.currentRenewTokenRequest = nil
@@ -95,7 +95,7 @@ public class BasicRequestInterceptor<Token>: RequestInterceptor {
     
     /// Handles the renewing of the session token
     private func renewSessionToken() {
-        self.currentRenewTokenRequest = self.renewSession?()?.then({ [weak self] result in
+        self.currentRenewTokenRequest = self.renewSession?().then({ [weak self] result in
             self?.onSessionRenewalSucceeded(token: result.data)
         })
         .catch({ [weak self] error in

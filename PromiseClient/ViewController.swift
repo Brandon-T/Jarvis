@@ -19,7 +19,9 @@ class ViewController: UIViewController {
         /// Handling session renewal..
         /// Globally intercepting all requests for modification or logging..
         Client.default.requestInterceptor = BasicRequestInterceptor(
-            renewSession: Client.default.task(endpoint: Endpoint<String>(.GET, "https://github.com/")).retry(3),
+            renewSession: {
+                Client.default.task(endpoint: Endpoint<String>(.GET, "https://github.com/")).retry(3)
+            },
             onTokenRenewed: { client, token, error in
                 
                 if let token = token {
