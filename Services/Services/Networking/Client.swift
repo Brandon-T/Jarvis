@@ -200,7 +200,7 @@ extension Client {
                         )
                     )
                     
-                    requestInterceptor?.requestSucceeded(request, for: endpoint, response: httpResponse)
+                    return requestInterceptor?.requestSucceeded(request, for: endpoint, response: httpResponse) ?? Void()
                 } catch {
                     if let interceptor = requestInterceptor {
                         return interceptor.requestFailed(request, for: endpoint, error: error, response: httpResponse, completion: .init(promise))
@@ -257,7 +257,7 @@ extension Client {
                         )
                     )
                     
-                    requestInterceptor?.requestSucceeded(request, for: endpoint, response: response)
+                    return requestInterceptor?.requestSucceeded(request, for: endpoint, response: response) ?? Void()
                 } catch {
                     if let interceptor = requestInterceptor {
                         return interceptor.requestFailed(request, for: endpoint, error: error, response: response, completion: .init(promise))
