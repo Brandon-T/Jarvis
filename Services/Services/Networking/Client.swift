@@ -9,6 +9,12 @@
 import Foundation
 import CommonCrypto
 
+#if os(macOS)
+import Cocoa
+#elseif os(iOS)
+import UIKit
+#endif
+
 #if canImport(Alamofire)
 import Alamofire
 #endif
@@ -132,6 +138,17 @@ final public class Client: NSObject {
         })
     }
     
+    #if os(macOS)
+    /// Returns a request/promise handler for the specified endpoint and immediately executes a request for this endpoint where the endpoint returns raw data..
+    public func task(endpoint: Endpoint<NSImage>, interceptor: RequestInterceptor? = nil) -> Request<NSImage> {
+        return urlRequest(endpoint: endpoint, interceptor: interceptor, { data -> NSImage in
+            guard let image = NSImage(data: data) else {
+                throw RuntimeError("Cannot Deserialize Data into UIImage")
+            }
+            return image
+        })
+    }
+    #elseif os(iOS)
     /// Returns a request/promise handler for the specified endpoint and immediately executes a request for this endpoint where the endpoint returns raw data..
     public func task(endpoint: Endpoint<UIImage>, interceptor: RequestInterceptor? = nil) -> Request<UIImage> {
         return urlRequest(endpoint: endpoint, interceptor: interceptor, { data -> UIImage in
@@ -141,6 +158,7 @@ final public class Client: NSObject {
             return image
         })
     }
+    #endif
 }
 
 // MARK: - Requests
@@ -339,7 +357,7 @@ extension Client: URLSessionDataDelegate {
                         }
                         
                         if case let .pinnedPublicKeys(publicKeys) = clientAuthentication {
-                            if #available(iOS 12.0, *) {
+                            if #available(iOS 12.0, macOS 10.14, *) {
                                 if let serverKey = SecCertificateCopyKey(serverCertificate), let serverPublicKey = (SecKeyCopyExternalRepresentation(serverKey, nil) as Data?)?.base64EncodedString() {
                                     
                                     for key in publicKeys {
@@ -352,6 +370,19 @@ extension Client: URLSessionDataDelegate {
                                 }
                             }
                             else {
+                                #if os(macOS)
+                                var serverKey: SecKey? = nil
+                                if SecCertificateCopyPublicKey(serverCertificate, &serverKey) == noErr, let serverKey = serverKey, let serverPublicKey = (SecKeyCopyExternalRepresentation(serverKey, nil) as Data?)?.base64EncodedString() {
+                                    
+                                    for key in publicKeys {
+                                        if let localPublicKey = (SecKeyCopyExternalRepresentation(key, nil) as Data?)?.base64EncodedString() {
+                                            if localPublicKey == serverPublicKey {
+                                                return completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                                            }
+                                        }
+                                    }
+                                }
+                                #else
                                 if let serverKey = SecCertificateCopyPublicKey(serverCertificate), let serverPublicKey = (SecKeyCopyExternalRepresentation(serverKey, nil) as Data?)?.base64EncodedString() {
                                     
                                     for key in publicKeys {
@@ -362,6 +393,7 @@ extension Client: URLSessionDataDelegate {
                                         }
                                     }
                                 }
+                                #endif
                             }
                             
                             return completionHandler(.cancelAuthenticationChallenge, nil)
@@ -382,11 +414,20 @@ extension Client: URLSessionDataDelegate {
 extension Client {
     /// Retrieves all public keys within the bundle.
     private static func publicKeys(in bundle: Bundle = Bundle.main) -> [SecKey] {
-        if #available(iOS 12.0, *) {
+        if #available(iOS 12.0, macOS 10.14, *) {
             return certificates(in: bundle).compactMap({ SecCertificateCopyKey($0) })
         }
-        
-        return certificates(in: bundle).compactMap({ SecCertificateCopyPublicKey($0) })
+        else {
+            #if os(macOS)
+            return certificates(in: bundle).compactMap({
+                var publicKey: SecKey? = nil
+                SecCertificateCopyPublicKey($0, &publicKey)
+                return publicKey
+            })
+            #else
+            return certificates(in: bundle).compactMap({ SecCertificateCopyPublicKey($0) })
+            #endif
+        }
     }
     
     /// Retrieves all certificates within the bundle.
