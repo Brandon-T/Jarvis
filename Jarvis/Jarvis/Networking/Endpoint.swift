@@ -40,13 +40,13 @@ public enum EndpointParameter {
     case queryCodable(Encodable, JSONEncoder?)
     
     /// Performs custom encoding on the parameters specified by the encoder block
-    case customData(_ parameters: Any, _ encoder: (Any) throws -> Data)
+    case customData(_ encoder: () throws -> Data)
     
     /// Performs custom encoding on the parameters specified by the encoder block
-    case customQuery(_ parameters: Any, _ encoder: (Any) throws -> [String: Any])
+    case customQuery(_ encoder: () throws -> [String: Any])
     
     /// Performs custom encoding on the parameters specified by the encoder block
-    case customJSON(_ parameters: Any, _ encoder: (Any) throws -> [String: Any])
+    case customJSON(_ encoder: () throws -> [String: Any])
     
     /// Performs custom encoding on the parameters specified by the encoder
     case custom(_ parameters: Any, _ encoder: RequestEncoder)
@@ -99,7 +99,8 @@ public struct Endpoint<T> {
     }
     
     /// Encodes this endpoint to a URLRequest
-    func encode(_ baseURL: String? = nil, headers: [String: String]? = nil) throws -> URLRequest? {
+    func encode(_ baseURL: String? = nil, headers: [String: String]? = nil) throws -> URLRequest? { //swiftlint:disable:this cyclomatic_complexity
+        
         #if canImport(Alamofire)
         guard let baseURL = URL(string: self.baseURL ?? baseURL ?? "") else { return nil }
         guard let url = URL(string: path, relativeTo: baseURL) else { return nil }
@@ -135,35 +136,35 @@ public struct Endpoint<T> {
                 
             case .jsonCodable:
                 request = try JSONEncoding.default.encode(request, with: parameters.jsonCodable)
-                
+
             case .queryCodable:
                 request = try URLEncoding.default.encode(request, with: parameters.queryCodable)
-                
-            case .customData(let parameters, let encoder):
+
+            case .customData(let encoder):
                 request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
-                request.httpBody = try encoder(parameters)
-                
-            case .customQuery(let parameters, let encoder):
-                request = try URLEncoding.default.encode(request, with: try encoder(parameters))
-                
-            case .customJSON(let parameters, let encoder):
-                request = try JSONEncoding.default.encode(request, with: try encoder(parameters))
-                
+                request.httpBody = try encoder()
+
+            case .customQuery(let encoder):
+                request = try URLEncoding.default.encode(request, with: try encoder())
+
+            case .customJSON(let encoder):
+                request = try JSONEncoding.default.encode(request, with: try encoder())
+
             case .custom(let parameters, let encoder):
                 request = try encoder.encode(request, with: parameters)
             }
         }
-        
+
         return request
         #else
         guard let baseURL = URL(string: baseURL ?? self.baseURL ?? "") else { return nil }
         guard let url = URL(string: path, relativeTo: baseURL) else { return nil }
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30.0)
-        
+
         /// Encode method
         request.httpMethod = method.rawValue
         request.httpShouldHandleCookies = shouldHandleCookies
-        
+
         /// Encode headers
         var extraHeaders = headers ?? [:]
         self.headers.forEach({
@@ -172,35 +173,35 @@ public struct Endpoint<T> {
                 extraHeaders.removeValue(forKey: $0.key)
             }
         })
-        
+
         extraHeaders.forEach({ request.setValue($0.value, forHTTPHeaderField: $0.key) })
-        
+
         /// Encode parameters
         if let parameters = parameters {
             switch parameters {
             case .json(let json):
                 request = try JSONURLEncoder.default.encode(request, with: json)
-                
+
             case .data(let data):
                 request = try DataURLEncoder.default.encode(request, with: data)
-                
+
             case .query(let query):
                 request = try QueryURLEncoder.default.encode(request, with: query)
-                
+
             case .jsonCodable:
                 request = try JSONURLEncoder.default.encode(request, with: parameters.jsonCodable)
-                
+
             case .queryCodable:
                 request = try QueryURLEncoder.default.encode(request, with: parameters.queryCodable)
-                
-            case .customData(let parameters, let encoder):
-                request = try DataURLEncoder.default.encode(request, with: try encoder(parameters))
-                
-            case .customQuery(let parameters, let encoder):
-                request = try QueryURLEncoder.default.encode(request, with: try encoder(parameters))
-                
-            case .customJSON(let parameters, let encoder):
-                request = try JSONURLEncoder.default.encode(request, with: try encoder(parameters))
+
+            case .customData(let encoder):
+                request = try DataURLEncoder.default.encode(request, with: try encoder())
+
+            case .customQuery(let encoder):
+                request = try QueryURLEncoder.default.encode(request, with: try encoder())
+
+            case .customJSON(let encoder):
+                request = try JSONURLEncoder.default.encode(request, with: try encoder())
                 
             case .custom(let parameters, let encoder):
                 request = try encoder.encode(request, with: parameters)
@@ -210,7 +211,7 @@ public struct Endpoint<T> {
         return request
         #endif
     }
-    
+
     /// Creates a coercive Data-Endpoint from this endpoint..
     /// For use when converting one endpoint's type to data without casting..
     func asDataEndpoint() -> Endpoint<Data> {
@@ -218,7 +219,7 @@ public struct Endpoint<T> {
         endpoint.baseURL = baseURL
         return endpoint
     }
-    
+
     /// Creates a coercive Endpoint from this endpoint..
     /// For use when converting one endpoint's type to another without casting..
     func asGenericEndpoint<T>() -> Endpoint<T> {
@@ -228,43 +229,42 @@ public struct Endpoint<T> {
     }
 }
 
+// MARK: - Private
 
-//MARK: - Private
-
-private extension Encodable {
+extension Encodable {
     /// Encodes an Encodable structure as JSON-Data.
-    func encode(_ encoder: JSONEncoder) throws -> Data? {
+    fileprivate func encode(_ encoder: JSONEncoder) throws -> Data? {
         return try encoder.encode(self)
     }
 }
 
-private extension EndpointParameter {
+extension EndpointParameter {
     /// Convenience to unwrap the json arguments
-    var json: [String: Any]? {
+    fileprivate var json: [String: Any]? {
         if case let .json(json) = self {
             return json
         }
         return nil
     }
-    
+
     /// Convenience to unwrap the data arguments
-    var data: Data? {
+    fileprivate var data: Data? {
         if case let .data(data) = self {
             return data
         }
         return nil
     }
-    
+
     /// Convenience to unwrap the query arguments
-    var query: [String: Any]? {
+    fileprivate var query: [String: Any]? {
         if case let .query(query) = self {
             return query
         }
         return nil
     }
-    
+
     /// Convenience to unwrap the json model arguments
-    var jsonCodable: [String: Any]? {
+    fileprivate var jsonCodable: [String: Any]? {
         if case let .jsonCodable(model, encoder) = self {
             if let data = try? model.encode(encoder ?? JSONEncoder()) {
                 return try? JSONSerialization.jsonObject(with: data, options: .init(rawValue: 0)) as? [String: Any]
@@ -272,9 +272,9 @@ private extension EndpointParameter {
         }
         return nil
     }
-    
+
     /// Convenience to unwrap the query model arguments
-    var queryCodable: [String: Any]? {
+    fileprivate var queryCodable: [String: Any]? {
         if case let .jsonCodable(model, encoder) = self {
             if let data = try? model.encode(encoder ?? JSONEncoder()) {
                 return try? JSONSerialization.jsonObject(with: data, options: .init(rawValue: 0)) as? [String: Any]

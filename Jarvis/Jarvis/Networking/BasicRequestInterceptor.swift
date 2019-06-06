@@ -121,10 +121,8 @@ public class BasicRequestInterceptor<Token>: RequestInterceptor {
     private func onSessionRenewalFailed(error: Error) {
         self.lock.lock(); defer { self.lock.unlock() }
         
-
         self.tasks.forEach({ $0.cancel() })
         self.tasks.removeAll()
-        
         
         self.onTokenRenewed?(self.client, nil, error)
         isRenewingToken = false

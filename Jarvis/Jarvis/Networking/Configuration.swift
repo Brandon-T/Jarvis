@@ -11,7 +11,7 @@ import Foundation
 /// A class for configuring the client
 public class Configuration {
     /// Base URL used for this configuration's requests
-    private let baseURL: URL
+    private let baseURL: String
     
     /// Static headers used for each request
     private let headers: [String: String]
@@ -19,7 +19,7 @@ public class Configuration {
     //Access token for this configuration's requests
     public var accessToken: String?
     
-    public init(baseURL: URL, headers: [String: String]) {
+    public init(baseURL: String, headers: [String: String]) {
         self.baseURL = baseURL
         self.headers = headers
         self.accessToken = nil
@@ -30,7 +30,7 @@ public class Configuration {
     ///       In the future it may be used to identify an endpoint and
     ///       return a baseURL for that specific endpoint instead of
     ///       having multiple clients with multiple configurations.
-    public func baseURL<T>(for endpoint: Endpoint<T>) -> URL {
+    public func baseURL<T>(for endpoint: Endpoint<T>) -> String {
         return self.baseURL
     }
     

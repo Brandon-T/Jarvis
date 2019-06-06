@@ -24,7 +24,7 @@ public struct RequestCompletionPromise<T> {
     /// Creates a request from an internal completion
     internal init<U>(_ requestCompletion: RequestCompletion<U>) {
         self.resolve = {
-            requestCompletion.resolve($0 as! U)
+            requestCompletion.resolve($0 as! U) // swiftlint:disable:this force_cast
         }
         
         self.reject = {
@@ -61,7 +61,7 @@ public struct RequestSuccess<T> {
 }
 
 /// A failed request's internal error
-public struct RequestFailure: Error {
+public struct RequestFailure: Error, CustomNSError, LocalizedError {
     /// The error returned from the server
     public let error: Error
     
@@ -70,6 +70,31 @@ public struct RequestFailure: Error {
     
     /// The server's response
     public let response: URLResponse?
+    
+    // MARK: - NSError Briding Implementation
+    public var localizedDescription: String {
+        return error.localizedDescription
+    }
+    
+    public var errorCode: Int {
+        return (error as NSError).code
+    }
+    
+    public var errorUserInfo: [String: Any] {
+        return (error as NSError).userInfo
+    }
+    
+    public static var errorDomain: String {
+        return "Jarvis.RequestFailureDomain"
+    }
+    
+    public var errorDescription: String? {
+        return (error as NSError).localizedDescription
+    }
+    
+    public var failureReason: String? {
+        return (error as NSError).localizedFailureReason
+    }
 }
 
 private class NetworkRequestInfo<T> {
@@ -109,11 +134,11 @@ private class NetworkRequestInfo<T> {
 public class Request<T> {
     // MARK: - Private Promise
     private var state: RequestPromiseState = .pending
-    private var value: RequestSuccess<T>? = nil
-    private var error: Error? = nil
+    private var value: RequestSuccess<T>?
+    private var error: Error?
     private let queue: DispatchQueue
     private lazy var tasks: [RequestPromiseTask<RequestSuccess<T>>] = {
-        return [RequestPromiseTask<RequestSuccess<T>>]()
+        [RequestPromiseTask<RequestSuccess<T>>]()
     }()
     
     // MARK: - Private Request
@@ -177,10 +202,10 @@ public class Request<T> {
     
     // MARK: - Public
     
-    /// Retry a request for a max amount of times (count)
+    /// Retry a request for a max amount of times (maxTries)
     @discardableResult
-    public func retry(_ count: Int) -> Request<T> {
-        guard let sessionManager = self.endpointInfo.sessionManager, let endpoint = self.endpointInfo.endpoint, count > 0 else {
+    public func retry(_ maxTries: Int) -> Request<T> {
+        guard let sessionManager = self.endpointInfo.sessionManager, let endpoint = self.endpointInfo.endpoint, maxTries > 0 else {
             return self
         }
 
@@ -192,7 +217,7 @@ public class Request<T> {
                     request.fulfill($0)
                 }
                 .catch {
-                    return count == 1 ? request.reject($0) : retryRequest(count - 1, request: request)
+                    count == 1 ? request.reject($0) : retryRequest(count - 1, request: request)
                 }.endpointInfo
             }
         }
@@ -200,7 +225,7 @@ public class Request<T> {
         let request = Request<T>(promise: RequestCompletion<RequestSuccess<T>>({ _ in }, { _ in }))
         request.endpointInfo = self.endpointInfo
         
-        retryRequest(count, request: request)
+        retryRequest(maxTries, request: request)
         return request
     }
     
@@ -220,23 +245,26 @@ public class Request<T> {
     fileprivate func wait(timeout: DispatchTime = DispatchTime.distantFuture) throws -> RequestSuccess<T>? {
         if self.isPending() {
             let lock = DispatchSemaphore(value: 0)
-            self.then(.global(qos: .userInitiated), { [weak self](value) in
-                self?.queue.sync { self?.value = value }
-                lock.signal()
-                }, { [weak self](error) in
+            self.then(
+                .global(qos: .userInitiated),
+                { [weak self] value in
+                    self?.queue.sync { self?.value = value } // swiftlint:disable:previous opening_brace
+                    lock.signal()
+                }, { [weak self] error in
                     self?.queue.sync { self?.error = error }
                     lock.signal()
-            })
+                }
+            )
             
             if lock.wait(timeout: timeout) == .success {
                 return self.queue.sync { self.value }
             }
         }
         
-        if let error = self.queue.sync(execute: { return self.error }) {
+        if let error = self.queue.sync(execute: { self.error }) {
             throw error
         }
-        return self.queue.sync { return self.value }
+        return self.queue.sync { self.value }
     }
     
     /// Determines if the promise is pending
@@ -256,12 +284,12 @@ public class Request<T> {
     
     /// Returns the promise's value
     fileprivate func getValue() -> RequestSuccess<T>? {
-        return self.queue.sync { return self.value }
+        return self.queue.sync { self.value }
     }
     
     /// Returns the promise's error
     fileprivate func getError() -> Error? {
-        return self.queue.sync { return self.error }
+        return self.queue.sync { self.error }
     }
     
     /// Fulfills the promise
@@ -327,21 +355,26 @@ public class Request<T> {
     @discardableResult
     public func then<Value>(_ on: DispatchQueue? = nil, _ onFulfilled: @escaping (RequestSuccess<T>) throws -> Request<Value>) -> Request<Value> {
         
-        let promise = RequestCompletion<RequestSuccess<Value>>({_ in}, {_ in})
+        let promise = RequestCompletion<RequestSuccess<Value>>({ _ in }, { _ in })
         let request = Request<Value>(promise: promise)
         
         self.queue.async {
             let queue = on ?? DispatchQueue.main
-            self.tasks.append(RequestPromiseTask<RequestSuccess<T>>(queue: queue, onFulfill: { (value) in
-                do {
-                    request.update(try onFulfilled(value)).then(promise.resolve, promise.reject)
-                }
-                catch let error {
-                    promise.reject(error)
-                }
-            }, onRejected: { (error) in
-                promise.reject(error)
-            }))
+            self.tasks.append(
+                RequestPromiseTask<RequestSuccess<T>>(
+                    queue: queue,
+                    onFulfill: { value in
+                        do {
+                            request.update(try onFulfilled(value)).then(promise.resolve, promise.reject)
+                        }
+                        catch let error {
+                            promise.reject(error)
+                        }
+                    }, onRejected: { error in
+                        promise.reject(error)
+                    }
+                )
+            )
         }
         return request
     }
@@ -358,13 +391,13 @@ public class Request<T> {
         return self.then(on, { _ in }, onRejected)
     }
     
-    //MARK: - Private
+    // MARK: - Private
     
     /// Handles resolving the promise
     private func doResolve() {
         self.queue.async {
             if self.state != .pending {
-                self.tasks.forEach({ [unowned self](task) in
+                self.tasks.forEach({ [unowned self] task in
                     if self.state == .fulfilled {
                         if let value = self.value {
                             task.queue.async {
@@ -385,7 +418,7 @@ public class Request<T> {
         }
     }
     
-    //MARK: - Private
+    // MARK: - Private
     
     /// Initializes the promise queue
     private init() {
@@ -427,7 +460,7 @@ public class Request<T> {
     /// A task that represent's a promises' completion
     private struct RequestPromiseTask<T> {
         let queue: DispatchQueue
-        let onFulfill: (T) -> ()
-        let onRejected: (Error) -> ()
+        let onFulfill: (T) -> Void
+        let onRejected: (Error) -> Void
     }
 }

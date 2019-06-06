@@ -8,14 +8,19 @@
 
 import Foundation
 
-public struct RuntimeError: Error {
+public class RuntimeError: NSError {
     private let message: String
-    
+
     public init(_ message: String) {
         self.message = message
+        
+        super.init(domain: "Jarvis.RuntimeError", code: -1, userInfo: [
+            NSLocalizedDescriptionKey: message,
+            NSLocalizedFailureErrorKey: message
+        ])
     }
     
-    var localizedDescription: String {
-        return message
+    required init?(coder aDecoder: NSCoder) {
+        fatalError()
     }
 }

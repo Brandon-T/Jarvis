@@ -36,7 +36,6 @@ public protocol RequestInterceptor {
     func requestFailed<T>(_ request: URLRequest, for endpoint: Endpoint<T>, error: Error, response: URLResponse?, completion: RequestCompletionPromise<RequestSuccess<T>>)
 }
 
-
 /// A client class that executes network requests/tasks and handles serialization automatically
 final public class Client: NSObject {
     /// Singleton default instance of Client
@@ -75,7 +74,7 @@ final public class Client: NSObject {
         
         let authenticationMethods = ServerTrustManager(allHostsMustBeEvaluated: false, evaluators: [:])
         
-        return Session(configuration: configuration, startRequestsImmediately: false, interceptor: nil, serverTrustManager: authenticationMethods)
+        return Session(configuration: configuration, startRequestsImmediately: false, serverTrustManager: authenticationMethods)
     }()
     #else
     
@@ -91,7 +90,7 @@ final public class Client: NSObject {
         
         self.authenticationMethods = [:]
         
-        return URLSession.init(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+        return URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
     }()
     #endif
     
@@ -102,7 +101,11 @@ final public class Client: NSObject {
     public func task<T>(endpoint: Endpoint<T>, interceptor: RequestInterceptor? = nil) -> Request<T> {
         return urlRequest(endpoint: endpoint, interceptor: interceptor, { data -> T in
             if T.self == String.self {
-                return (String(data: data, encoding: .utf8) ?? "") as! T
+                return (String(data: data, encoding: .utf8) ?? "") as! T // swiftlint:disable:this force_cast
+            }
+            
+            if let result = try (T.self as? Decodable.Type)?.decode(data: data) as? T {
+                return result
             }
             
             if let result = try JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as? T {
@@ -118,7 +121,7 @@ final public class Client: NSObject {
     public func task<T: Decodable>(endpoint: Endpoint<T>, interceptor: RequestInterceptor? = nil) -> Request<T> {
         return urlRequest(endpoint: endpoint, interceptor: interceptor, { data -> T in
             if T.self == String.self {
-                return (String(data: data, encoding: .utf8) ?? "") as! T
+                return (String(data: data, encoding: .utf8) ?? "") as! T // swiftlint:disable:this force_cast
             }
             return try JSONDecoder().decode(T.self, from: data)
         })
@@ -126,15 +129,15 @@ final public class Client: NSObject {
 
     /// Returns a request/promise handler for the specified endpoint and immediately executes a request for this endpoint where the endpoint returns NOTHING..
     public func task(endpoint: Endpoint<Void>, interceptor: RequestInterceptor? = nil) -> Request<Void> {
-        return urlRequest(endpoint: endpoint, interceptor: interceptor, { data -> Void in
-            return Void()
+        return urlRequest(endpoint: endpoint, interceptor: interceptor, { _ in
+            Void()
         })
     }
 
     /// Returns a request/promise handler for the specified endpoint and immediately executes a request for this endpoint where the endpoint returns raw data..
     public func task(endpoint: Endpoint<Data>, interceptor: RequestInterceptor? = nil) -> Request<Data> {
         return urlRequest(endpoint: endpoint, interceptor: interceptor, { data -> Data in
-            return data
+            data
         })
     }
     
@@ -164,16 +167,18 @@ final public class Client: NSObject {
 // MARK: - Requests
 
 extension Client {
+    
     /// Generic request executer which executes a request to an endpoint and providers a serialization block which is used to resolve the future/promise..
-    private func urlRequest<T, U>(endpoint: Endpoint<T>, interceptor: RequestInterceptor? = nil, _ serializer: @escaping (Data) throws -> U) -> Request<U> {
+    private func urlRequest<T, U>(endpoint: Endpoint<T>, interceptor: RequestInterceptor? = nil, _ serializer: @escaping (Data) throws -> U) -> Request<U> { //swiftlint:disable:this cyclomatic_complexity
         
         let requestInterceptor = interceptor ?? self.requestInterceptor
         
         /// Create a request with the given endpoint..
-        var request: URLRequest! = nil
+        var request: URLRequest! = nil //swiftlint:disable:this implicitly_unwrapped_optional
         do {
-            request = try endpoint.encode(configuration?.baseURL(for: endpoint).absoluteString, headers: configuration?.headers(for: endpoint))
-        } catch let error {
+            request = try endpoint.encode(configuration?.baseURL(for: endpoint), headers: configuration?.headers(for: endpoint))
+        }
+        catch let error {
             let promise = RequestCompletion<RequestSuccess<U>>({ _ in }, { _ in })
             let request = Request<U>(self, endpoint: endpoint.asGenericEndpoint(), task: nil, promise: promise)
             promise.reject(error)
@@ -190,7 +195,8 @@ extension Client {
             if let error = response.error {
                 if let interceptor = requestInterceptor {
                     return interceptor.requestFailed(request, for: endpoint, error: error, response: response.response, completion: .init(promise))
-                } else {
+                }
+                else {
                     return promise.reject(RequestFailure(error: error, rawData: response.data, response: response.response))
                 }
             }
@@ -219,7 +225,8 @@ extension Client {
                     )
                     
                     return requestInterceptor?.requestSucceeded(request, for: endpoint, response: httpResponse) ?? Void()
-                } catch {
+                }
+                catch {
                     if let interceptor = requestInterceptor {
                         return interceptor.requestFailed(request, for: endpoint, error: error, response: httpResponse, completion: .init(promise))
                     }
@@ -247,7 +254,8 @@ extension Client {
             if let error = error {
                 if let interceptor = requestInterceptor {
                     return interceptor.requestFailed(request, for: endpoint, error: error, response: response, completion: .init(promise))
-                } else {
+                }
+                else {
                     return promise.reject(RequestFailure(error: error, rawData: data, response: response))
                 }
             }
@@ -276,7 +284,8 @@ extension Client {
                     )
                     
                     return requestInterceptor?.requestSucceeded(request, for: endpoint, response: response) ?? Void()
-                } catch {
+                }
+                catch {
                     if let interceptor = requestInterceptor {
                         return interceptor.requestFailed(request, for: endpoint, error: error, response: response, completion: .init(promise))
                     }
@@ -303,6 +312,13 @@ extension Client {
     }
 }
 
+// MARK: - Internal
+extension Decodable {
+    internal static func decode(data: Data) throws -> Self {
+        return try JSONDecoder().decode(Self.self, from: data)
+    }
+}
+
 #if !canImport(Alamofire)
 // MARK: - Security
 
@@ -316,7 +332,7 @@ extension Client: URLSessionDataDelegate {
     }
     
     /// Handles the server authentication challenge via Basic OAuth OR certificate pinning via certificate OR public key pinning.
-    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) { //swiftlint:disable:this cyclomatic_complexity
         
         /// NO AUTH
         if self.authenticationMethods.isEmpty {
@@ -371,7 +387,7 @@ extension Client: URLSessionDataDelegate {
                             }
                             else {
                                 #if os(macOS)
-                                var serverKey: SecKey? = nil
+                                var serverKey: SecKey?
                                 if SecCertificateCopyPublicKey(serverCertificate, &serverKey) == noErr, let serverKey = serverKey, let serverPublicKey = (SecKeyCopyExternalRepresentation(serverKey, nil) as Data?)?.base64EncodedString() {
                                     
                                     for key in publicKeys {
@@ -420,7 +436,7 @@ extension Client {
         else {
             #if os(macOS)
             return certificates(in: bundle).compactMap({
-                var publicKey: SecKey? = nil
+                var publicKey: SecKey?
                 SecCertificateCopyPublicKey($0, &publicKey)
                 return publicKey
             })
@@ -436,7 +452,7 @@ extension Client {
         
         let paths = Set([".cer", ".CER", ".crt", ".CRT", ".der", ".DER"].map { fileExtension in
             bundle.paths(forResourcesOfType: fileExtension, inDirectory: nil)
-            }.joined())
+        }.joined())
         
         for path in paths {
             if let certificateData = try? Data(contentsOf: URL(fileURLWithPath: path)) as CFData, let certificate = SecCertificateCreateWithData(nil, certificateData) {
