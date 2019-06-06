@@ -6,7 +6,7 @@
 //  Copyright © 2019 SO. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for Jarvis.
 FOUNDATION_EXPORT double JarvisVersionNumber;

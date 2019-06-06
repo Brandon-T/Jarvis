@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E2BA06C22A9A72D00E009DC /* RuntimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F662279E8D000247E68 /* RuntimeError.swift */; };
+		5E2BA06D22A9A73100E009DC /* BasicRequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F682279E8D000247E68 /* BasicRequestInterceptor.swift */; };
+		5E2BA06E22A9A73100E009DC /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F692279E8D000247E68 /* Client.swift */; };
+		5E2BA06F22A9A73100E009DC /* Request.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F6A2279E8D000247E68 /* Request.swift */; };
+		5E2BA07022A9A73100E009DC /* URLEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F6B2279E8D000247E68 /* URLEncoder.swift */; };
+		5E2BA07122A9A73100E009DC /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F6C2279E8D000247E68 /* Endpoint.swift */; };
+		5E2BA07222A9A73100E009DC /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8BF6CB227F540100E308C8 /* Configuration.swift */; };
+		5E2BA07322A9A73400E009DC /* Jarvis.h in Headers */ = {isa = PBXBuildFile; fileRef = 5EC66F432279E89800247E68 /* Jarvis.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5E8BF6CC227F540100E308C8 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8BF6CB227F540100E308C8 /* Configuration.swift */; };
 		5EC66F452279E89800247E68 /* Jarvis.h in Headers */ = {isa = PBXBuildFile; fileRef = 5EC66F432279E89800247E68 /* Jarvis.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5EC66F6D2279E8D000247E68 /* RuntimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F662279E8D000247E68 /* RuntimeError.swift */; };
@@ -113,6 +121,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E2BA07322A9A73400E009DC /* Jarvis.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,6 +229,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E2BA07022A9A73100E009DC /* URLEncoder.swift in Sources */,
+				5E2BA06D22A9A73100E009DC /* BasicRequestInterceptor.swift in Sources */,
+				5E2BA07222A9A73100E009DC /* Configuration.swift in Sources */,
+				5E2BA06F22A9A73100E009DC /* Request.swift in Sources */,
+				5E2BA06C22A9A72D00E009DC /* RuntimeError.swift in Sources */,
+				5E2BA07122A9A73100E009DC /* Endpoint.swift in Sources */,
+				5E2BA06E22A9A73100E009DC /* Client.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
