@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "5E2BA02422A9904800E009DC"
-               BuildableName = "Services_MacOS.framework"
-               BlueprintName = "Services_MacOS"
-               ReferencedContainer = "container:Services.xcodeproj">
+               BlueprintIdentifier = "5E2BA05B22A9A02C00E009DC"
+               BuildableName = "Jarvis.framework"
+               BlueprintName = "Jarvis macOS"
+               ReferencedContainer = "container:Jarvis.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,10 +45,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "5E2BA02422A9904800E009DC"
-            BuildableName = "Services_MacOS.framework"
-            BlueprintName = "Services_MacOS"
-            ReferencedContainer = "container:Services.xcodeproj">
+            BlueprintIdentifier = "5E2BA05B22A9A02C00E009DC"
+            BuildableName = "Jarvis.framework"
+            BlueprintName = "Jarvis macOS"
+            ReferencedContainer = "container:Jarvis.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -63,10 +63,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "5E2BA02422A9904800E009DC"
-            BuildableName = "Services_MacOS.framework"
-            BlueprintName = "Services_MacOS"
-            ReferencedContainer = "container:Services.xcodeproj">
+            BlueprintIdentifier = "5E2BA05B22A9A02C00E009DC"
+            BuildableName = "Jarvis.framework"
+            BlueprintName = "Jarvis macOS"
+            ReferencedContainer = "container:Jarvis.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

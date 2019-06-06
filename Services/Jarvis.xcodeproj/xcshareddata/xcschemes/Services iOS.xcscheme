@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "5EC66F3F2279E89800247E68"
-               BuildableName = "Services.framework"
-               BlueprintName = "Services"
-               ReferencedContainer = "container:Services.xcodeproj">
+               BuildableName = "Jarvis.framework"
+               BlueprintName = "Jarvis iOS"
+               ReferencedContainer = "container:Jarvis.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +46,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5EC66F3F2279E89800247E68"
-            BuildableName = "Services.framework"
-            BlueprintName = "Services"
-            ReferencedContainer = "container:Services.xcodeproj">
+            BuildableName = "Jarvis.framework"
+            BlueprintName = "Jarvis iOS"
+            ReferencedContainer = "container:Jarvis.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -64,9 +64,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "5EC66F3F2279E89800247E68"
-            BuildableName = "Services.framework"
-            BlueprintName = "Services"
-            ReferencedContainer = "container:Services.xcodeproj">
+            BuildableName = "Jarvis.framework"
+            BlueprintName = "Jarvis iOS"
+            ReferencedContainer = "container:Jarvis.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

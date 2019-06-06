@@ -7,23 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E2BA06522A9A23F00E009DC /* Jarvis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E2BA06422A9A23F00E009DC /* Jarvis.framework */; };
+		5E2BA06622A9A23F00E009DC /* Jarvis.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5E2BA06422A9A23F00E009DC /* Jarvis.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5EC66F0F227798F300247E68 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F0E227798F300247E68 /* AppDelegate.swift */; };
 		5EC66F11227798F300247E68 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F10227798F300247E68 /* ViewController.swift */; };
 		5EC66F14227798F300247E68 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EC66F12227798F300247E68 /* Main.storyboard */; };
 		5EC66F16227798F500247E68 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5EC66F15227798F500247E68 /* Assets.xcassets */; };
 		5EC66F19227798F500247E68 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EC66F17227798F500247E68 /* LaunchScreen.storyboard */; };
-		5EC66F742279E8DE00247E68 /* Services.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EC66F732279E8DE00247E68 /* Services.framework */; };
-		5EC66F752279E8DE00247E68 /* Services.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5EC66F732279E8DE00247E68 /* Services.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		5EC66F762279E8DE00247E68 /* Embed Frameworks */ = {
+		5E2BA06722A9A23F00E009DC /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				5EC66F752279E8DE00247E68 /* Services.framework in Embed Frameworks */,
+				5E2BA06622A9A23F00E009DC /* Jarvis.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -31,6 +31,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5E2BA06422A9A23F00E009DC /* Jarvis.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Jarvis.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EC66F0B227798F300247E68 /* PromiseClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PromiseClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EC66F0E227798F300247E68 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5EC66F10227798F300247E68 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -38,7 +39,6 @@
 		5EC66F15227798F500247E68 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5EC66F18227798F500247E68 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5EC66F1A227798F500247E68 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5EC66F732279E8DE00247E68 /* Services.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Services.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,7 +46,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5EC66F742279E8DE00247E68 /* Services.framework in Frameworks */,
+				5E2BA06522A9A23F00E009DC /* Jarvis.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,7 +56,7 @@
 		5EC66F02227798F300247E68 = {
 			isa = PBXGroup;
 			children = (
-				5EC66F732279E8DE00247E68 /* Services.framework */,
+				5E2BA06422A9A23F00E009DC /* Jarvis.framework */,
 				5EC66F0D227798F300247E68 /* PromiseClient */,
 				5EC66F0C227798F300247E68 /* Products */,
 			);
@@ -93,7 +93,7 @@
 				5EC66F07227798F300247E68 /* Sources */,
 				5EC66F08227798F300247E68 /* Frameworks */,
 				5EC66F09227798F300247E68 /* Resources */,
-				5EC66F762279E8DE00247E68 /* Embed Frameworks */,
+				5E2BA06722A9A23F00E009DC /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

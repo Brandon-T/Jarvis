@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:Services/Services.xcodeproj">
+      location = "group:/Users/brandonanthony/Desktop/Jarvis/Services/Jarvis.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:PromiseClient.xcodeproj">
