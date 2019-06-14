@@ -11,13 +11,13 @@ import Foundation
 public class RuntimeError: NSError {
     private let message: String
 
-    public init(_ message: String) {
+    public init(_ message: String, code: Int = -1) {
         self.message = message
         
-        super.init(domain: "Jarvis.RuntimeError", code: -1, userInfo: [
+        super.init(domain: "Jarvis.RuntimeError", code: code, userInfo: [
             NSLocalizedDescriptionKey: message,
             NSLocalizedFailureErrorKey: message
-        ])
+            ])
     }
     
     required init?(coder aDecoder: NSCoder) {

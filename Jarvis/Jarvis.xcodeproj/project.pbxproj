@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E0D4F5E22B3FA12000587A0 /* Security.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0D4F5D22B3FA12000587A0 /* Security.swift */; };
+		5E0D4F5F22B3FA12000587A0 /* Security.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0D4F5D22B3FA12000587A0 /* Security.swift */; };
 		5E2BA06C22A9A72D00E009DC /* RuntimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F662279E8D000247E68 /* RuntimeError.swift */; };
 		5E2BA06D22A9A73100E009DC /* BasicRequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F682279E8D000247E68 /* BasicRequestInterceptor.swift */; };
 		5E2BA06E22A9A73100E009DC /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F692279E8D000247E68 /* Client.swift */; };
@@ -26,6 +28,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5E0D4F5D22B3FA12000587A0 /* Security.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Security.swift; sourceTree = "<group>"; };
 		5E2BA05C22A9A02C00E009DC /* Jarvis.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Jarvis.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E8BF6CB227F540100E308C8 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		5EC66F402279E89800247E68 /* Jarvis.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Jarvis.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,6 +113,7 @@
 				5EC66F6B2279E8D000247E68 /* URLEncoder.swift */,
 				5EC66F6C2279E8D000247E68 /* Endpoint.swift */,
 				5E8BF6CB227F540100E308C8 /* Configuration.swift */,
+				5E0D4F5D22B3FA12000587A0 /* Security.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -251,6 +255,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5E2BA07022A9A73100E009DC /* URLEncoder.swift in Sources */,
+				5E0D4F5F22B3FA12000587A0 /* Security.swift in Sources */,
 				5E2BA06D22A9A73100E009DC /* BasicRequestInterceptor.swift in Sources */,
 				5E2BA07222A9A73100E009DC /* Configuration.swift in Sources */,
 				5E2BA06F22A9A73100E009DC /* Request.swift in Sources */,
@@ -265,6 +270,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5EC66F712279E8D000247E68 /* URLEncoder.swift in Sources */,
+				5E0D4F5E22B3FA12000587A0 /* Security.swift in Sources */,
 				5EC66F6D2279E8D000247E68 /* RuntimeError.swift in Sources */,
 				5E8BF6CC227F540100E308C8 /* Configuration.swift in Sources */,
 				5EC66F702279E8D000247E68 /* Request.swift in Sources */,

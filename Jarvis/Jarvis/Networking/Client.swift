@@ -65,6 +65,9 @@ final public class Client: NSObject {
     /// A configuration instance that is used to configure the client
     private(set) public var configuration: Configuration?
     
+    /// A trust manager to manager server trusts and certificates
+    public let trustManager = ClientTrustManager(allHostsMustBeEvaluated: false, evaluators: [:])
+    
     /// Handle alamofire requests
     #if canImport(Alamofire)
     private lazy var sessionManager: Session = {
@@ -72,23 +75,15 @@ final public class Client: NSObject {
         configuration.protocolClasses = nil
         configuration.urlCache = nil
         
-        let authenticationMethods = ServerTrustManager(allHostsMustBeEvaluated: false, evaluators: [:])
-        
-        return Session(configuration: configuration, startRequestsImmediately: false, serverTrustManager: authenticationMethods)
+        return Session(configuration: configuration, startRequestsImmediately: false, serverTrustManager: trustManager)
     }()
     #else
-    
-    /// A dictionary with a list of domains and their TrustAuthentication (security implementations)
-    /// Use this to implement SSL pinning or certificate trust
-    private var authenticationMethods = [String: TrustAuthentication]()
     
     /// The Session Manager.. We can implement certificate pinning here to prevent MITM attack or implement Basic OAuth authentication here..
     private lazy var sessionManager: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.protocolClasses = nil
         configuration.urlCache = nil
-        
-        self.authenticationMethods = [:]
         
         return URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
     }()
@@ -194,7 +189,7 @@ extension Client {
             /// Reject the request.. Some sort of error has occurred.
             if let error = response.error {
                 if let interceptor = requestInterceptor {
-                    return interceptor.requestFailed(request, for: endpoint, error: error, response: response.response, completion: .init(promise))
+                    return interceptor.requestFailed(request, for: endpoint, error: RequestFailure(error: error, rawData: response.data, response: response.response), response: response.response, completion: .init(promise))
                 }
                 else {
                     return promise.reject(RequestFailure(error: error, rawData: response.data, response: response.response))
@@ -228,7 +223,7 @@ extension Client {
                 }
                 catch {
                     if let interceptor = requestInterceptor {
-                        return interceptor.requestFailed(request, for: endpoint, error: error, response: httpResponse, completion: .init(promise))
+                        return interceptor.requestFailed(request, for: endpoint, error: RequestFailure(error: error, rawData: data, response: httpResponse), response: httpResponse, completion: .init(promise))
                     }
                     else {
                         return promise.reject(RequestFailure(error: error, rawData: data, response: httpResponse))
@@ -253,7 +248,7 @@ extension Client {
             /// Reject the request.. Some sort of error has occurred.
             if let error = error {
                 if let interceptor = requestInterceptor {
-                    return interceptor.requestFailed(request, for: endpoint, error: error, response: response, completion: .init(promise))
+                    return interceptor.requestFailed(request, for: endpoint, error: RequestFailure(error: error, rawData: data, response: response), response: response, completion: .init(promise))
                 }
                 else {
                     return promise.reject(RequestFailure(error: error, rawData: data, response: response))
@@ -263,7 +258,7 @@ extension Client {
             if let data = data, let response = response {
                 if let response = response as? HTTPURLResponse {
                     if response.statusCode < 200 || response.statusCode > 299 {
-                        let error = RequestFailure(error: RuntimeError("Validation Failed: \(response.statusCode)"), rawData: data, response: response)
+                        let error = RequestFailure(error: RuntimeError("Validation Failed: \(response.statusCode)", code: response.statusCode), rawData: data, response: response)
                         
                         if let interceptor = requestInterceptor {
                             return interceptor.requestFailed(request, for: endpoint, error: error, response: response, completion: .init(promise))
@@ -287,7 +282,7 @@ extension Client {
                 }
                 catch {
                     if let interceptor = requestInterceptor {
-                        return interceptor.requestFailed(request, for: endpoint, error: error, response: response, completion: .init(promise))
+                        return interceptor.requestFailed(request, for: endpoint, error: RequestFailure(error: error, rawData: data, response: response), response: response, completion: .init(promise))
                     }
                     else {
                         return promise.reject(RequestFailure(error: error, rawData: data, response: response))
@@ -324,103 +319,42 @@ extension Decodable {
 
 extension Client: URLSessionDataDelegate {
     
-    /// A TrustAuthentication that determines how to handle the server challenge..
-    enum TrustAuthentication {
-        case pinnedCertificates(_ certificates: SecCertificate)
-        case pinnedPublicKeys(_ keys: [SecKey])
-        case pinnedCredentials(_ username: String, _ password: String)
-    }
-    
     /// Handles the server authentication challenge via Basic OAuth OR certificate pinning via certificate OR public key pinning.
-    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) { //swiftlint:disable:this cyclomatic_complexity
+    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         
         /// NO AUTH
-        if self.authenticationMethods.isEmpty {
+        if self.trustManager.isEmpty {
             return completionHandler(.performDefaultHandling, nil)
         }
-
+        
         /// BASIC
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodHTTPBasic {
             if challenge.proposedCredential != nil || challenge.previousFailureCount > 0 {
                 return completionHandler(.cancelAuthenticationChallenge, nil)
             }
             
-            if case let .pinnedCredentials(credentials)? = self.authenticationMethods[challenge.protectionSpace.host] {
-                let creds = URLCredential(user: credentials.0, password: credentials.1, persistence: .forSession)
-                return completionHandler(.useCredential, creds)
-            }
+            //if case let .pinnedCredentials(credentials)? = self.authenticationMethods[challenge.protectionSpace.host] {
+            //    let creds = URLCredential(user: credentials.0, password: credentials.1, persistence: .forSession)
+            //    return completionHandler(.useCredential, creds)
+            //}
             return completionHandler(.performDefaultHandling, nil)
         }
         
         /// PINNING
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-            guard let clientAuthentication = self.authenticationMethods[challenge.protectionSpace.host] else { return completionHandler(.performDefaultHandling, nil) }
-            
             if let serverTrust = challenge.protectionSpace.serverTrust {
-                var secresult = SecTrustResultType.invalid
-                let status = SecTrustEvaluate(serverTrust, &secresult)
-                
-                if status == errSecSuccess {
-                    if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
-                        if case let .pinnedCertificates(certificate) = clientAuthentication {
-                            let serverFingerprint = Client.sha1FingerPrint(data: SecCertificateCopyData(serverCertificate) as Data)
-                            let clientFingerprint = Client.sha1FingerPrint(data: SecCertificateCopyData(certificate) as Data)
-                            
-                            if serverFingerprint == clientFingerprint {
-                                return completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                            }
-                            return completionHandler(.cancelAuthenticationChallenge, nil)
-                        }
-                        
-                        if case let .pinnedPublicKeys(publicKeys) = clientAuthentication {
-                            if #available(iOS 12.0, macOS 10.14, *) {
-                                if let serverKey = SecCertificateCopyKey(serverCertificate), let serverPublicKey = (SecKeyCopyExternalRepresentation(serverKey, nil) as Data?)?.base64EncodedString() {
-                                    
-                                    for key in publicKeys {
-                                        if let localPublicKey = (SecKeyCopyExternalRepresentation(key, nil) as Data?)?.base64EncodedString() {
-                                            if localPublicKey == serverPublicKey {
-                                                return completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                #if os(macOS)
-                                var serverKey: SecKey?
-                                if SecCertificateCopyPublicKey(serverCertificate, &serverKey) == noErr, let serverKey = serverKey, let serverPublicKey = (SecKeyCopyExternalRepresentation(serverKey, nil) as Data?)?.base64EncodedString() {
-                                    
-                                    for key in publicKeys {
-                                        if let localPublicKey = (SecKeyCopyExternalRepresentation(key, nil) as Data?)?.base64EncodedString() {
-                                            if localPublicKey == serverPublicKey {
-                                                return completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                                            }
-                                        }
-                                    }
-                                }
-                                #else
-                                if let serverKey = SecCertificateCopyPublicKey(serverCertificate), let serverPublicKey = (SecKeyCopyExternalRepresentation(serverKey, nil) as Data?)?.base64EncodedString() {
-                                    
-                                    for key in publicKeys {
-                                        if let localPublicKey = (SecKeyCopyExternalRepresentation(key, nil) as Data?)?.base64EncodedString() {
-                                            if localPublicKey == serverPublicKey {
-                                                return completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                                            }
-                                        }
-                                    }
-                                }
-                                #endif
-                            }
-                            
-                            return completionHandler(.cancelAuthenticationChallenge, nil)
-                        }
-                    }
+                do {
+                    let host = challenge.protectionSpace.host
+                    let evaluator = try self.trustManager.serverTrustEvaluator(forHost: host)
+                    try evaluator?.evaluate(serverTrust, forHost: host)
+                    return completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                } catch let error {
+                    print(error)
+                    return completionHandler(.cancelAuthenticationChallenge, nil)
                 }
             }
-            
             return completionHandler(.cancelAuthenticationChallenge, nil)
         }
-        
         return completionHandler(.performDefaultHandling, nil)
     }
 }
@@ -428,41 +362,6 @@ extension Client: URLSessionDataDelegate {
 // MARK: - Internal
 
 extension Client {
-    /// Retrieves all public keys within the bundle.
-    private static func publicKeys(in bundle: Bundle = Bundle.main) -> [SecKey] {
-        if #available(iOS 12.0, macOS 10.14, *) {
-            return certificates(in: bundle).compactMap({ SecCertificateCopyKey($0) })
-        }
-        else {
-            #if os(macOS)
-            return certificates(in: bundle).compactMap({
-                var publicKey: SecKey?
-                SecCertificateCopyPublicKey($0, &publicKey)
-                return publicKey
-            })
-            #else
-            return certificates(in: bundle).compactMap({ SecCertificateCopyPublicKey($0) })
-            #endif
-        }
-    }
-    
-    /// Retrieves all certificates within the bundle.
-    private static func certificates(in bundle: Bundle = Bundle.main) -> [SecCertificate] {
-        var certificates: [SecCertificate] = []
-        
-        let paths = Set([".cer", ".CER", ".crt", ".CRT", ".der", ".DER"].map { fileExtension in
-            bundle.paths(forResourcesOfType: fileExtension, inDirectory: nil)
-        }.joined())
-        
-        for path in paths {
-            if let certificateData = try? Data(contentsOf: URL(fileURLWithPath: path)) as CFData, let certificate = SecCertificateCreateWithData(nil, certificateData) {
-                certificates.append(certificate)
-            }
-        }
-        
-        return certificates
-    }
-    
     /// Retrieves a sha1 fingerprint from data (mostly used for certificate data)..
     /// Note that Sha1 is deprecated & broken! but some servers still use it!
     private static func sha1FingerPrint(data: Data) -> String {
