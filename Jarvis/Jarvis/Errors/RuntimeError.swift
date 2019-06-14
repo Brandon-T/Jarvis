@@ -17,7 +17,7 @@ public class RuntimeError: NSError {
         super.init(domain: "Jarvis.RuntimeError", code: code, userInfo: [
             NSLocalizedDescriptionKey: message,
             NSLocalizedFailureErrorKey: message
-            ])
+        ])
     }
     
     required init?(coder aDecoder: NSCoder) {
