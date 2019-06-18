@@ -93,6 +93,8 @@ public class BasicRequestInterceptor<Token>: RequestInterceptor {
         }
     }
     
+    // MARK: - Private
+    
     /// Handles the renewing of the session token
     private func renewSessionToken() {
         self.currentRenewTokenRequest = self.renewSession?().then({ [weak self] result in

@@ -54,18 +54,20 @@ public enum EndpointParameter {
 
 /// The endpoint structure that defines which server endpoint to hit for the request.
 public struct Endpoint<T> {
-    private(set) public var method: HTTPMethod
-    private(set) public var baseURL: String?
-    private(set) public var path: String
-    private(set) public var parameters: EndpointParameter?
-    private(set) public var headers: [String: String]
-    private(set) public var shouldHandleCookies: Bool
+    public let method: HTTPMethod
+    public let baseURL: String?
+    public let path: String
+    public let parameters: EndpointParameter?
+    public let headers: [String: String]
+    public let shouldHandleCookies: Bool
     
     public init(_ method: HTTPMethod, _ path: String, parameters: EndpointParameter? = nil, headers: [String: String]? = nil, shouldHandleCookies: Bool = true) {
         
+        var path = path
+        
         if let url = URL(string: path) {
             self.baseURL = url.scheme?.appending("://").appending(url.host ?? "")
-            self.path = url.path
+            path = url.path
         }
         else {
             self.baseURL = nil
@@ -92,6 +94,7 @@ public struct Endpoint<T> {
         #endif
         
         self.method = method
+        self.baseURL = baseURL.isEmpty ? nil : baseURL
         self.path = path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? path
         self.parameters = parameters
         self.headers = headers ?? [:]
@@ -99,7 +102,7 @@ public struct Endpoint<T> {
     }
     
     /// Encodes this endpoint to a URLRequest
-    func encode(_ baseURL: String? = nil, headers: [String: String]? = nil) throws -> URLRequest? { //swiftlint:disable:this cyclomatic_complexity
+    public func encode(_ baseURL: String? = nil, headers: [String: String]? = nil) throws -> URLRequest? { //swiftlint:disable:this cyclomatic_complexity
         
         #if canImport(Alamofire)
         guard let baseURL = URL(string: self.baseURL ?? baseURL ?? "") else { return nil }
@@ -214,18 +217,14 @@ public struct Endpoint<T> {
 
     /// Creates a coercive Data-Endpoint from this endpoint..
     /// For use when converting one endpoint's type to data without casting..
-    func asDataEndpoint() -> Endpoint<Data> {
-        var endpoint = Endpoint<Data>(method, path, parameters: parameters, headers: headers, shouldHandleCookies: shouldHandleCookies)
-        endpoint.baseURL = baseURL
-        return endpoint
+    internal func asDataEndpoint() -> Endpoint<Data> {
+        return Endpoint<Data>(method, baseURL: baseURL ?? "", path: path, parameters: parameters, headers: headers, shouldHandleCookies: shouldHandleCookies)
     }
 
     /// Creates a coercive Endpoint from this endpoint..
     /// For use when converting one endpoint's type to another without casting..
-    func asGenericEndpoint<T>() -> Endpoint<T> {
-        var endpoint = Endpoint<T>(method, path, parameters: parameters, headers: headers, shouldHandleCookies: shouldHandleCookies)
-        endpoint.baseURL = baseURL
-        return endpoint
+    internal func asGenericEndpoint<T>() -> Endpoint<T> {
+        return Endpoint<T>(method, baseURL: baseURL ?? "", path: path, parameters: parameters, headers: headers, shouldHandleCookies: shouldHandleCookies)
     }
 }
 

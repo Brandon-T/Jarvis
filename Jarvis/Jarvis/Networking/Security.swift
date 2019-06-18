@@ -184,8 +184,13 @@ public final class PublicKeyEvaluator: TrustEvaluator {
     }
 }
 
+protocol ServerTrustManager {
+    init(allHostsMustBeEvaluated: Bool, evaluators: [String: TrustEvaluator])
+    func serverTrustEvaluator(forHost host: String) throws -> TrustEvaluator?
+}
+
 /// Trust Manager that manages which hosts gets evaluated
-public class ClientTrustManager {
+public class ClientTrustManager: ServerTrustManager {
     private var evaluateAllHosts: Bool
     private var trustEvaluators: [String: TrustEvaluator]
     private let lock = NSRecursiveLock()
@@ -200,7 +205,7 @@ public class ClientTrustManager {
     }
     
     /// Returns a trust evaluator for the specified host if any exists
-    func serverTrustEvaluator(forHost host: String) throws -> TrustEvaluator? {
+    public func serverTrustEvaluator(forHost host: String) throws -> TrustEvaluator? {
         lock.lock(); defer { lock.unlock() }
         
         guard let evaluator = trustEvaluators[host] else {
@@ -221,7 +226,7 @@ public class ClientTrustManager {
 
 extension Bundle {
     /// Retrieves all public keys within the bundle.
-    public var publicKeys: [SecKey] {
+    internal var publicKeys: [SecKey] {
         return certificates.compactMap({ certificate -> SecKey? in
             var trust: SecTrust?
             let status = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
@@ -231,7 +236,7 @@ extension Bundle {
     }
     
     /// Retrieves all certificates within the bundle.
-    public var certificates: [SecCertificate] {
+    internal var certificates: [SecCertificate] {
         let paths = Set([".cer", ".CER", ".crt", ".CRT", ".der", ".DER"].map {
             self.paths(forResourcesOfType: $0, inDirectory: nil)
         }.joined())
