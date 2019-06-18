@@ -27,7 +27,7 @@ public protocol RequestInterceptor {
     var client: Client? { get set }
     
     /// A request is about to be executed
-    func willLaunchRequest<T>(_ request: URLRequest, for endpoint: Endpoint<T>)
+    func willLaunchRequest<T>(_ request: inout URLRequest, for endpoint: Endpoint<T>)
     
     /// A request has succeeded
     func requestSucceeded<T>(_ request: URLRequest, for endpoint: Endpoint<T>, response: URLResponse)
@@ -180,7 +180,7 @@ extension Client {
             return request
         }
         
-        requestInterceptor?.willLaunchRequest(request, for: endpoint)
+        requestInterceptor?.willLaunchRequest(&request, for: endpoint)
         
         #if canImport(Alamofire)
         /// Create a promise that encapsulates the raw request callback
