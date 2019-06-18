@@ -199,7 +199,7 @@ public class ClientTrustManager: ServerTrustManager {
         return trustEvaluators.isEmpty
     }
     
-    public init(allHostsMustBeEvaluated: Bool = true, evaluators: [String: TrustEvaluator]) {
+    required public init(allHostsMustBeEvaluated: Bool = true, evaluators: [String: TrustEvaluator]) {
         self.evaluateAllHosts = allHostsMustBeEvaluated
         self.trustEvaluators = evaluators
     }
