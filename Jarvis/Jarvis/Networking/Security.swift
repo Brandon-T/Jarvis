@@ -30,7 +30,7 @@ public class ClientTrustManager: ServerTrustManager {
         super.init(allHostsMustBeEvaluated: allHostsMustBeEvaluated, evaluators: [:])
     }
     
-    override func serverTrustEvaluator(forHost host: String) throws -> ServerTrustEvaluating? {
+    public override func serverTrustEvaluator(forHost host: String) throws -> ServerTrustEvaluating? {
         lock.lock(); defer { lock.unlock() }
         
         guard let evaluator = trustEvaluators[host] else {

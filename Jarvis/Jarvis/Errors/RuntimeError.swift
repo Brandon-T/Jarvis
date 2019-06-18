@@ -14,10 +14,17 @@ public class RuntimeError: NSError {
     public init(_ message: String, code: Int = -1) {
         self.message = message
         
-        super.init(domain: "Jarvis.RuntimeError", code: code, userInfo: [
-            NSLocalizedDescriptionKey: message,
-            NSLocalizedFailureErrorKey: message
-        ])
+        if #available(iOS 11.0, *) {
+            super.init(domain: "Jarvis.RuntimeError", code: code, userInfo: [
+                NSLocalizedDescriptionKey: message,
+                NSLocalizedFailureErrorKey: message
+            ])
+        }
+        else {
+            super.init(domain: "Jarvis.RuntimeError", code: code, userInfo: [
+                NSLocalizedDescriptionKey: message
+            ])
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
