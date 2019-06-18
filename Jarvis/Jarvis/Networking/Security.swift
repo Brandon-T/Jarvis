@@ -184,8 +184,13 @@ public final class PublicKeyEvaluator: TrustEvaluator {
     }
 }
 
+protocol ServerTrustManager {
+    init(allHostsMustBeEvaluated: Bool, evaluators: [String: TrustEvaluator])
+    func serverTrustEvaluator(forHost host: String) throws -> TrustEvaluator?
+}
+
 /// Trust Manager that manages which hosts gets evaluated
-public class ClientTrustManager {
+public class ClientTrustManager: ServerTrustManager {
     private var evaluateAllHosts: Bool
     private var trustEvaluators: [String: TrustEvaluator]
     private let lock = NSRecursiveLock()
@@ -194,7 +199,7 @@ public class ClientTrustManager {
         return trustEvaluators.isEmpty
     }
     
-    public init(allHostsMustBeEvaluated: Bool = true, evaluators: [String: TrustEvaluator]) {
+    required public init(allHostsMustBeEvaluated: Bool = true, evaluators: [String: TrustEvaluator]) {
         self.evaluateAllHosts = allHostsMustBeEvaluated
         self.trustEvaluators = evaluators
     }

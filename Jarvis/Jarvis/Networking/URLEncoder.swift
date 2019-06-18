@@ -16,7 +16,7 @@ public protocol RequestEncoder {
 
 #if !canImport(Alamofire)
 /// A URLEncoder protocol that allows custom encoding of a request's parameters
-protocol URLEncoder {
+public protocol URLEncoder {
     associatedtype ParamterType
     
     /// Default instance of the encoder
@@ -27,13 +27,13 @@ protocol URLEncoder {
 }
 
 /// Encodes a URLRequest's parameters into the query string
-struct QueryURLEncoder: URLEncoder {
-    static var `default`: QueryURLEncoder {
+public struct QueryURLEncoder: URLEncoder {
+    public static var `default`: QueryURLEncoder {
         return QueryURLEncoder()
     }
     
     /// Encodes the provided parameters into the request's query string
-    func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) throws -> URLRequest {
+    public func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) throws -> URLRequest {
         var urlRequest = urlRequest
         var urlComponents = URLComponents()
         urlComponents.scheme = urlRequest.url?.scheme
@@ -51,13 +51,13 @@ struct QueryURLEncoder: URLEncoder {
 }
 
 /// Encodes a URLRequest's parameters into the body as a raw stream of data
-struct DataURLEncoder: URLEncoder {
-    static var `default`: DataURLEncoder {
+public struct DataURLEncoder: URLEncoder {
+    public static var `default`: DataURLEncoder {
         return DataURLEncoder()
     }
     
     /// Encodes the provided parameters into the request's body as a raw stream of data
-    func encode(_ urlRequest: URLRequest, with parameters: Data?) throws -> URLRequest {
+    public func encode(_ urlRequest: URLRequest, with parameters: Data?) throws -> URLRequest {
         var urlRequest = urlRequest
         urlRequest.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = parameters
@@ -66,13 +66,13 @@ struct DataURLEncoder: URLEncoder {
 }
 
 /// Encodes a URLRequest's parameters into the body as JSON
-struct JSONURLEncoder: URLEncoder {
-    static var `default`: JSONURLEncoder {
+public struct JSONURLEncoder: URLEncoder {
+    public static var `default`: JSONURLEncoder {
         return JSONURLEncoder()
     }
     
     /// Encodes the provided parameters into the request's body as JSON
-    func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) throws -> URLRequest {
+    public func encode(_ urlRequest: URLRequest, with parameters: [String: Any]?) throws -> URLRequest {
         var urlRequest = urlRequest
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters ?? [:], options: .prettyPrinted)
