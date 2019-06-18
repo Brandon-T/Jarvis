@@ -205,7 +205,7 @@ public class ClientTrustManager: ServerTrustManager {
     }
     
     /// Returns a trust evaluator for the specified host if any exists
-    func serverTrustEvaluator(forHost host: String) throws -> TrustEvaluator? {
+    public func serverTrustEvaluator(forHost host: String) throws -> TrustEvaluator? {
         lock.lock(); defer { lock.unlock() }
         
         guard let evaluator = trustEvaluators[host] else {
