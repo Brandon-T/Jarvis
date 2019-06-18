@@ -226,7 +226,7 @@ public class ClientTrustManager: ServerTrustManager {
 
 extension Bundle {
     /// Retrieves all public keys within the bundle.
-    internal var publicKeys: [SecKey] {
+    public var publicKeys: [SecKey] {
         return certificates.compactMap({ certificate -> SecKey? in
             var trust: SecTrust?
             let status = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
@@ -236,7 +236,7 @@ extension Bundle {
     }
     
     /// Retrieves all certificates within the bundle.
-    internal var certificates: [SecCertificate] {
+    public var certificates: [SecCertificate] {
         let paths = Set([".cer", ".CER", ".crt", ".CRT", ".der", ".DER"].map {
             self.paths(forResourcesOfType: $0, inDirectory: nil)
         }.joined())
