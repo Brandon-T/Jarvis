@@ -8,6 +8,37 @@
 
 import Foundation
 
+/// A network request interceptor that chains multiple request interceptors together.
+/// This is useful for having multiple interceptors attached to a client.
+/// IE: One for logging, one for session renewal, one for request modification, etc.
+public class MultiRequestInterceptor: RequestInterceptor {
+    public weak var client: Client?
+    private var interceptors: [RequestInterceptor]
+    
+    public init() {
+        self.interceptors = []
+    }
+    
+    public init(_ interceptors: [RequestInterceptor]) {
+        self.interceptors = interceptors
+    }
+    
+    public func willLaunchRequest<T>(_ request: inout URLRequest, for endpoint: Endpoint<T>) {
+        
+        interceptors.forEach({ $0.willLaunchRequest(&request, for: endpoint) })
+    }
+    
+    public func requestSucceeded<T>(_ request: URLRequest, for endpoint: Endpoint<T>, response: URLResponse) {
+        
+        interceptors.forEach({ $0.requestSucceeded(request, for: endpoint, response: response) })
+    }
+    
+    public func requestFailed<T>(_ request: URLRequest, for endpoint: Endpoint<T>, error: Error, response: URLResponse?, completion: RequestCompletionPromise<RequestSuccess<T>>) {
+        
+        interceptors.forEach({ $0.requestFailed(request, for: endpoint, error: error, response: response, completion: completion) })
+    }
+}
+
 /// A network request interceptor that handles session renewal, logging, and errors that happen during a request.
 /// This class will handle automatic token renewal.
 /// This class will handle logging a request's lifetime.
@@ -36,7 +67,7 @@ public class BasicRequestInterceptor<Token>: RequestInterceptor {
         self.currentRenewTokenRequest = nil
     }
     
-    public func willLaunchRequest<T>(_ request: URLRequest, for endpoint: Endpoint<T>) {
+    public func willLaunchRequest<T>(_ request: inout URLRequest, for endpoint: Endpoint<T>) {
         /// Request being launched.. Log it to the console..
     }
     

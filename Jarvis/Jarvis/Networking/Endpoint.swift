@@ -65,9 +65,9 @@ public struct Endpoint<T> {
         
         var path = path
         
-        if let url = URL(string: path) {
-            self.baseURL = url.scheme?.appending("://").appending(url.host ?? "")
-            path = url.path
+        if let url = URL(string: path), let scheme = url.scheme, let host = url.host {
+            self.baseURL = scheme.appending("://").appending(host)
+            path = "\(url.path)\(path.hasSuffix("/") ? "/" : "")"
         }
         else {
             self.baseURL = nil
