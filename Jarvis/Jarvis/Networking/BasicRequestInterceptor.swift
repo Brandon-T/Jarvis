@@ -12,8 +12,16 @@ import Foundation
 /// This is useful for having multiple interceptors attached to a client.
 /// IE: One for logging, one for session renewal, one for request modification, etc.
 public class MultiRequestInterceptor: RequestInterceptor {
-    public weak var client: Client?
     private var interceptors: [RequestInterceptor]
+    
+    public weak var client: Client? {
+        didSet {
+            for var interceptor in interceptors {
+                interceptor.client = client
+            }
+        }
+    }
+    
     
     public init() {
         self.interceptors = []
