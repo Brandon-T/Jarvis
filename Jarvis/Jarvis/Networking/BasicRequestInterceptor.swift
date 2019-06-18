@@ -22,7 +22,6 @@ public class MultiRequestInterceptor: RequestInterceptor {
         }
     }
     
-    
     public init() {
         self.interceptors = []
     }
