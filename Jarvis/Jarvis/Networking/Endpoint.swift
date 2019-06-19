@@ -104,11 +104,11 @@ public struct Endpoint<T> {
     /// Encodes this endpoint to a URLRequest
     public func encode(_ baseURL: String? = nil, headers: [String: String]? = nil) throws -> URLRequest? { //swiftlint:disable:this cyclomatic_complexity
         
-        #if canImport(Alamofire)
-        guard let baseURL = URL(string: self.baseURL ?? baseURL ?? "") else { return nil }
-        guard let url = URL(string: path, relativeTo: baseURL) else { return nil }
+        guard let baseURL = URL(string: baseURL ?? self.baseURL ?? "") else { return nil }
+        guard let url = path.isEmpty ? baseURL : URL(string: path, relativeTo: baseURL) else { return nil }
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30.0)
         
+        #if canImport(Alamofire)
         /// Encode method
         request.httpMethod = method.rawValue
         request.httpShouldHandleCookies = shouldHandleCookies
@@ -160,10 +160,6 @@ public struct Endpoint<T> {
 
         return request
         #else
-        guard let baseURL = URL(string: baseURL ?? self.baseURL ?? "") else { return nil }
-        guard let url = URL(string: path, relativeTo: baseURL) else { return nil }
-        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30.0)
-
         /// Encode method
         request.httpMethod = method.rawValue
         request.httpShouldHandleCookies = shouldHandleCookies
@@ -280,5 +276,60 @@ extension EndpointParameter {
             }
         }
         return nil
+    }
+    
+    internal func rawData() -> Data? { //swiftlint:disable:this cyclomatic_complexity
+        switch self {
+        case .json(let json):
+            return try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+            
+        case .data(let data):
+            if let json = try? JSONSerialization.jsonObject(with: data, options: .init(rawValue: 0)) as? [String: Any] {
+                return (try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)) ?? data
+            }
+            return data
+            
+        case .query(let query):
+            return try? JSONSerialization.data(withJSONObject: query, options: .prettyPrinted)
+            
+        case .jsonCodable(let model, let encoder), .queryCodable(let model, let encoder):
+            if let data = try? model.encode(encoder ?? JSONEncoder()) {
+                if let json = try? JSONSerialization.jsonObject(with: data, options: .init(rawValue: 0)) as? [String: Any] {
+                    return (try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)) ?? data
+                }
+                return data
+            }
+            return nil
+            
+        case .customData(let encoder):
+            if let data = try? encoder() {
+                if let json = try? JSONSerialization.jsonObject(with: data, options: .init(rawValue: 0)) as? [String: Any] {
+                    return (try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)) ?? data
+                }
+                return data
+            }
+            return nil
+            
+        case .customQuery(let encoder):
+            if let json = try? encoder() {
+                return try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+            }
+            return nil
+            
+        case .customJSON(let encoder):
+            if let json = try? encoder() {
+                return try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+            }
+            return nil
+            
+        case .custom(let parameters, let encoder):
+            if let request = try? encoder.encode(URLRequest(url: URL(string: "127.0.0.1")!), with: parameters) { //swiftlint:disable:this force_unwrapping
+                if let json = try? JSONSerialization.jsonObject(with: request.httpBody ?? Data(), options: .init(rawValue: 0)) as? [String: Any] {
+                    return (try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)) ?? request.httpBody
+                }
+                return request.httpBody
+            }
+            return nil
+        }
     }
 }

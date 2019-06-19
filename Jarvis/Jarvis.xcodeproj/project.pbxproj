@@ -18,6 +18,14 @@
 		5E2BA07222A9A73100E009DC /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8BF6CB227F540100E308C8 /* Configuration.swift */; };
 		5E2BA07322A9A73400E009DC /* Jarvis.h in Headers */ = {isa = PBXBuildFile; fileRef = 5EC66F432279E89800247E68 /* Jarvis.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5E8BF6CC227F540100E308C8 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8BF6CB227F540100E308C8 /* Configuration.swift */; };
+		5EA9F1E522BA849700BD3811 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1E422BA849700BD3811 /* LogLevel.swift */; };
+		5EA9F1E622BA849700BD3811 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1E422BA849700BD3811 /* LogLevel.swift */; };
+		5EA9F1E822BA84CD00BD3811 /* MultiRequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1E722BA84CD00BD3811 /* MultiRequestInterceptor.swift */; };
+		5EA9F1E922BA84CD00BD3811 /* MultiRequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1E722BA84CD00BD3811 /* MultiRequestInterceptor.swift */; };
+		5EA9F1EB22BA853F00BD3811 /* RequestLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1EA22BA853F00BD3811 /* RequestLogger.swift */; };
+		5EA9F1EC22BA853F00BD3811 /* RequestLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1EA22BA853F00BD3811 /* RequestLogger.swift */; };
+		5EA9F1EE22BA857000BD3811 /* RequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1ED22BA857000BD3811 /* RequestInterceptor.swift */; };
+		5EA9F1EF22BA857000BD3811 /* RequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1ED22BA857000BD3811 /* RequestInterceptor.swift */; };
 		5EC66F452279E89800247E68 /* Jarvis.h in Headers */ = {isa = PBXBuildFile; fileRef = 5EC66F432279E89800247E68 /* Jarvis.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5EC66F6D2279E8D000247E68 /* RuntimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F662279E8D000247E68 /* RuntimeError.swift */; };
 		5EC66F6E2279E8D000247E68 /* BasicRequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F682279E8D000247E68 /* BasicRequestInterceptor.swift */; };
@@ -33,6 +41,10 @@
 		5E8BF6CB227F540100E308C8 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		5EA9F1D622B930C800BD3811 /* Alamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Alamofire.framework; path = ../Carthage/Build/iOS/Alamofire.framework; sourceTree = "<group>"; };
 		5EA9F1D822B930D500BD3811 /* Alamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Alamofire.framework; path = ../Carthage/Build/Mac/Alamofire.framework; sourceTree = "<group>"; };
+		5EA9F1E422BA849700BD3811 /* LogLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogLevel.swift; sourceTree = "<group>"; };
+		5EA9F1E722BA84CD00BD3811 /* MultiRequestInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiRequestInterceptor.swift; sourceTree = "<group>"; };
+		5EA9F1EA22BA853F00BD3811 /* RequestLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLogger.swift; sourceTree = "<group>"; };
+		5EA9F1ED22BA857000BD3811 /* RequestInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestInterceptor.swift; sourceTree = "<group>"; };
 		5EC66F402279E89800247E68 /* Jarvis.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Jarvis.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EC66F432279E89800247E68 /* Jarvis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Jarvis.h; sourceTree = "<group>"; };
 		5EC66F442279E89800247E68 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -65,6 +77,8 @@
 		5E8BF6CA227E361200E308C8 /* Logging */ = {
 			isa = PBXGroup;
 			children = (
+				5EA9F1E422BA849700BD3811 /* LogLevel.swift */,
+				5EA9F1EA22BA853F00BD3811 /* RequestLogger.swift */,
 			);
 			path = Logging;
 			sourceTree = "<group>";
@@ -76,6 +90,16 @@
 				5EA9F1D622B930C800BD3811 /* Alamofire.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5EA9F1F022BA859300BD3811 /* Interceptors */ = {
+			isa = PBXGroup;
+			children = (
+				5EA9F1ED22BA857000BD3811 /* RequestInterceptor.swift */,
+				5EC66F682279E8D000247E68 /* BasicRequestInterceptor.swift */,
+				5EA9F1E722BA84CD00BD3811 /* MultiRequestInterceptor.swift */,
+			);
+			path = Interceptors;
 			sourceTree = "<group>";
 		};
 		5EC66F362279E89800247E68 = {
@@ -99,6 +123,7 @@
 		5EC66F422279E89800247E68 /* Jarvis */ = {
 			isa = PBXGroup;
 			children = (
+				5EA9F1F022BA859300BD3811 /* Interceptors */,
 				5E8BF6CA227E361200E308C8 /* Logging */,
 				5EC66F652279E8D000247E68 /* Errors */,
 				5EC66F672279E8D000247E68 /* Networking */,
@@ -119,7 +144,6 @@
 		5EC66F672279E8D000247E68 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
-				5EC66F682279E8D000247E68 /* BasicRequestInterceptor.swift */,
 				5EC66F692279E8D000247E68 /* Client.swift */,
 				5EC66F6A2279E8D000247E68 /* Request.swift */,
 				5EC66F6B2279E8D000247E68 /* URLEncoder.swift */,
@@ -273,7 +297,11 @@
 				5E2BA06F22A9A73100E009DC /* Request.swift in Sources */,
 				5E2BA06C22A9A72D00E009DC /* RuntimeError.swift in Sources */,
 				5E2BA07122A9A73100E009DC /* Endpoint.swift in Sources */,
+				5EA9F1EF22BA857000BD3811 /* RequestInterceptor.swift in Sources */,
+				5EA9F1E922BA84CD00BD3811 /* MultiRequestInterceptor.swift in Sources */,
+				5EA9F1E622BA849700BD3811 /* LogLevel.swift in Sources */,
 				5E2BA06E22A9A73100E009DC /* Client.swift in Sources */,
+				5EA9F1EC22BA853F00BD3811 /* RequestLogger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,7 +316,11 @@
 				5EC66F702279E8D000247E68 /* Request.swift in Sources */,
 				5EC66F6E2279E8D000247E68 /* BasicRequestInterceptor.swift in Sources */,
 				5EC66F722279E8D000247E68 /* Endpoint.swift in Sources */,
+				5EA9F1EE22BA857000BD3811 /* RequestInterceptor.swift in Sources */,
+				5EA9F1E822BA84CD00BD3811 /* MultiRequestInterceptor.swift in Sources */,
+				5EA9F1E522BA849700BD3811 /* LogLevel.swift in Sources */,
 				5EC66F6F2279E8D000247E68 /* Client.swift in Sources */,
+				5EA9F1EB22BA853F00BD3811 /* RequestLogger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
