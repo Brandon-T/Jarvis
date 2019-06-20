@@ -8,14 +8,12 @@
 
 import UIKit
 import Jarvis
-
+import os
 
 class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
-        
+
         /// Handling session renewal..
         /// Globally intercepting all requests for modification or logging..
         Client.default.requestInterceptor = BasicRequestInterceptor(

@@ -19,23 +19,6 @@ import UIKit
 import Alamofire
 #endif
 
-/// A client interceptor protocol
-/// All request interceptors must implement this protocol
-public protocol RequestInterceptor {
-    
-    /// MUST be weak in the implementation!
-    var client: Client? { get set }
-    
-    /// A request is about to be executed
-    func willLaunchRequest<T>(_ request: inout URLRequest, for endpoint: Endpoint<T>)
-    
-    /// A request has succeeded
-    func requestSucceeded<T>(_ request: URLRequest, for endpoint: Endpoint<T>, response: URLResponse)
-    
-    /// A request has failed
-    func requestFailed<T>(_ request: URLRequest, for endpoint: Endpoint<T>, error: Error, response: URLResponse?, completion: RequestCompletionPromise<RequestSuccess<T>>)
-}
-
 /// A client class that executes network requests/tasks and handles serialization automatically
 final public class Client: NSObject {
     /// Singleton default instance of Client
@@ -219,7 +202,7 @@ extension Client {
                         )
                     )
                     
-                    return requestInterceptor?.requestSucceeded(request, for: endpoint, response: httpResponse) ?? Void()
+                    return requestInterceptor?.requestSucceeded(request, for: endpoint, data: data, response: httpResponse) ?? Void()
                 }
                 catch {
                     if let interceptor = requestInterceptor {
@@ -278,7 +261,7 @@ extension Client {
                         )
                     )
                     
-                    return requestInterceptor?.requestSucceeded(request, for: endpoint, response: response) ?? Void()
+                    return requestInterceptor?.requestSucceeded(request, for: endpoint, data: data, response: response) ?? Void()
                 }
                 catch {
                     if let interceptor = requestInterceptor {
