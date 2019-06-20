@@ -14,17 +14,19 @@ public final class RequestLogger: RequestInterceptor {
     private var requests: [URLRequest: Date]
     private let logLevel: LogLevel
     
+    public let requestLogs: RequestLogSubscriber<[RequestPacket]>
+    
     public init(_ logLevel: LogLevel) {
         self.client = nil
         self.requests = [:]
         self.logLevel = logLevel
+        self.requestLogs = RequestLogSubscriber<[RequestPacket]>([])
     }
     
     public func willLaunchRequest<T>(_ request: inout URLRequest, for endpoint: Endpoint<T>) {
         if logLevel != .none {
             requests.updateValue(Date(), forKey: request)
         }
-        
         log(request: request, for: endpoint)
     }
     
@@ -38,29 +40,17 @@ public final class RequestLogger: RequestInterceptor {
 }
 
 extension RequestLogger {
-    private struct RequestPacket {
-        let startDate: Date
-        let headers: [String: String]
-        let status: String
-        let body: String
-        
-        let response: HTTPURLResponse?
-        let responseData: Data?
-        let error: Error?
-        let endDate: Date?
-    }
-    
+
     private func log<T>(request: URLRequest, for endpoint: Endpoint<T>, data: Data? = nil, error: Error? = nil, response: URLResponse? = nil) {
         guard logLevel != .none, let response = response as? HTTPURLResponse else {
             return
         }
         
-        defer { requests.removeValue(forKey: request) }
+        defer { requests.removeValue(forKey: request); }
         
         let startDate = requests[request] ?? Date()
         let endDate = Date()
         let timeInterval = endDate.timeIntervalSince(startDate)
-        
         
         let components = Calendar.current.dateComponents([.second, .minute, .hour], from: startDate)
         let date = String(format: "[%02ld:%02ld:%02ld]", components.hour!, components.minute!, components.second!) //swiftlint:disable:this force_unwrapping
@@ -158,7 +148,19 @@ extension RequestLogger {
         
         // Log Message
         logMessage(logData)
+        
+        // Storage
+        let packet = RequestPacket(startDate: startDate, endDate: endDate, request: request, response: response, responseData: data, error: error)
+        
+        var requestLogs = self.requestLogs.value
+        requestLogs.insert(packet, at: 0)
+        if requestLogs.count > 25 {
+            requestLogs.removeLast()
+        }
+        self.requestLogs.value = requestLogs
     }
+    
+    // MARK: - Private
     
     private func logMessage(_ message: String) {
         var logData = "\n"
@@ -180,6 +182,70 @@ extension RequestLogger {
     private func indent(_ input: String, amount: Int = 4) -> String {
         let indentation = String(repeating: " ", count: amount)
         return "\(indentation)\(input.components(separatedBy: "\n").joined(separator: "\n\(indentation)"))"
+    }
+}
+
+extension RequestLogger {
+    /// A request packet contains all information about a request and its response
+    public struct RequestPacket {
+        public let startDate: Date
+        public let endDate: Date
+        public let request: URLRequest
+        public let response: HTTPURLResponse
+        public let responseData: Data?
+        public let error: Error?
+    }
+    
+    public class RequestLogSubscriber<T> {
+        public typealias Observer = (_ newValue: T, _ oldValue: T?) -> Void
+        private var subscribers = [(Observer, RequestLogObserver)]()
+        
+        init(_ value: T) {
+            self.value = value
+        }
+        
+        internal(set) public var value: T {
+            didSet {
+                subscribers.forEach({
+                    $0.0(value, oldValue)
+                })
+            }
+        }
+        
+        @discardableResult
+        public func observe(_ observer: @escaping Observer) -> RequestLogObserver {
+            let disposable = RequestLogObserver({ [weak self] in self?.removeObserver($0) })
+            subscribers.append((observer, disposable))
+            subscribers.forEach { $0.0(value, nil) }
+            return disposable
+        }
+        
+        private func removeObserver(_ object: RequestLogObserver) {
+            object.dispose()
+            subscribers = subscribers.filter { $1 !== object }
+        }
+        
+        private func removeAllObservers() {
+            subscribers.forEach({ $1.dispose(); })
+            subscribers.removeAll()
+        }
+    }
+    
+    public class RequestLogObserver {
+        private var disposer: ((RequestLogObserver) -> Void)?
+        
+        init(_ disposer: @escaping (RequestLogObserver) -> Void) {
+            self.disposer = disposer
+        }
+        
+        deinit {
+            dispose()
+        }
+        
+        public func dispose() {
+            self.disposer?(self)
+            self.disposer = nil
+        }
     }
 }
 

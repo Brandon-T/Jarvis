@@ -39,8 +39,12 @@ class ViewController: UIViewController {
         })
         
         
+        let logger = RequestLogger(.simple)
+        Client.default.requestInterceptor = logger
         
-        Client.default.requestInterceptor = RequestLogger(.simple)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.present(RequestLogViewController(logger), animated: true, completion: nil)
+        }
         
         Client.default.task(endpoint: Endpoint<String>(.GET, "https://google.ca"))
         .retry(2)
