@@ -21,7 +21,10 @@ public final class RequestLogger: RequestInterceptor {
     }
     
     public func willLaunchRequest<T>(_ request: inout URLRequest, for endpoint: Endpoint<T>) {
-        requests.updateValue(Date(), forKey: request)
+        if logLevel != .none {
+            requests.updateValue(Date(), forKey: request)
+        }
+        
         log(request: request, for: endpoint)
     }
     
@@ -48,12 +51,11 @@ extension RequestLogger {
     }
     
     private func log<T>(request: URLRequest, for endpoint: Endpoint<T>, data: Data? = nil, error: Error? = nil, response: URLResponse? = nil) {
-        
-        defer { requests.removeValue(forKey: request) }
-
         guard logLevel != .none, let response = response as? HTTPURLResponse else {
             return
         }
+        
+        defer { requests.removeValue(forKey: request) }
         
         let startDate = requests[request] ?? Date()
         let endDate = Date()
@@ -103,7 +105,7 @@ extension RequestLogger {
         }
         
         // Log Elapsed Time
-        logData += "Elapsed Time: \(String(format: "%.2fs", timeInterval))"
+        logData += "Elapsed Time: \(String(format: "%.3fs", timeInterval))"
         logData += "\n"
         
         if let error = error {
@@ -159,21 +161,20 @@ extension RequestLogger {
     }
     
     private func logMessage(_ message: String) {
-        print("\n")
-        print("**********************************\n")
+        var logData = "\n"
+        logData += "\n**********************************\n\n"
+        logData += "\(message)"
+        logData += "\n**********************************\n\n"
         
         #if USE_OS_LOG
         if logLevel != .none {
-            os_log(message, log: .network, type: .info)
+            os_log(logData, log: .network, type: .info)
         }
         #else
         if logLevel != .none {
-            print(message)
+            print(logData)
         }
         #endif
-        
-        print("**********************************")
-        print("\n")
     }
     
     private func indent(_ input: String, amount: Int = 4) -> String {

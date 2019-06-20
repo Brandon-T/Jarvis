@@ -40,7 +40,7 @@ class ViewController: UIViewController {
         
         
         
-        
+        Client.default.requestInterceptor = RequestLogger(.simple)
         
         Client.default.task(endpoint: Endpoint<String>(.GET, "https://google.ca"))
         .retry(2)
