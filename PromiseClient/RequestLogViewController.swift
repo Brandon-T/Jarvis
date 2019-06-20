@@ -59,6 +59,7 @@ class RequestLogViewController: UIViewController {
 extension RequestLogViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let detailsController = RequestLogDetailsViewController()
+        detailsController.requestLog = self.packets[indexPath.row]
         
         if let navigationController = self.navigationController {
             navigationController.pushViewController(detailsController, animated: true)

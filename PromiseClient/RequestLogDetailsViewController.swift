@@ -111,6 +111,8 @@ class RequestLogDetailsViewController: UIViewController {
                 logData.append(attributedText("Body:\n", weight: .bold, size: 12.0, colour: .orange))
                 logData.append(attributedText("\(indent(body))\n\n", weight: .medium, size: 12.0, colour: .black))
             }
+            
+            infoView.attributedText = logData
         }
         else {
             let startDate = requestLog.startDate
@@ -132,9 +134,6 @@ class RequestLogDetailsViewController: UIViewController {
             // Normalize path
             var path = requestLog.request.url?.path ?? ""
             path = path.isEmpty ? "/" : path
-            
-            // Normalize query
-            let query = requestLog.request.url?.query ?? ""
             
             // Normalize headers
             var responseHeaders = requestLog.response.allHeaderFields
@@ -187,6 +186,8 @@ class RequestLogDetailsViewController: UIViewController {
                 
                 logData.append(attributedText("Body:\n", weight: .bold, size: 12.0, colour: .orange))
                 logData.append(attributedText("\(bodyData)\n\n", weight: .medium, size: 12.0, colour: .black))
+                
+                infoView.attributedText = logData
             }
         }
     }
