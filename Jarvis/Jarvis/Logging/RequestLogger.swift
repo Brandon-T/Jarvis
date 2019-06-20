@@ -13,13 +13,11 @@ public final class RequestLogger: RequestInterceptor {
     public weak var client: Client?
     private var requests: [URLRequest: Date]
     private let logLevel: LogLevel
-    private let logsOutgoingRequest: Bool
     
-    public init(_ logLevel: LogLevel, logsOutgoingRequest: Bool = false) {
+    public init(_ logLevel: LogLevel) {
         self.client = nil
         self.requests = [:]
         self.logLevel = logLevel
-        self.logsOutgoingRequest = logsOutgoingRequest
     }
     
     public func willLaunchRequest<T>(_ request: inout URLRequest, for endpoint: Endpoint<T>) {
@@ -32,7 +30,7 @@ public final class RequestLogger: RequestInterceptor {
     }
     
     public func requestFailed<T>(_ request: URLRequest, for endpoint: Endpoint<T>, error: Error, response: URLResponse?, completion: RequestCompletionPromise<RequestSuccess<T>>) {
-        log(request: request, for: endpoint, error: error, response: response)
+        log(request: request, for: endpoint, data: (error as? RequestFailure)?.rawData, error: error, response: response)
     }
 }
 
@@ -51,137 +49,118 @@ extension RequestLogger {
     
     private func log<T>(request: URLRequest, for endpoint: Endpoint<T>, data: Data? = nil, error: Error? = nil, response: URLResponse? = nil) {
         
-        if logLevel == .none {
+        defer { requests.removeValue(forKey: request) }
+
+        guard logLevel != .none, let response = response as? HTTPURLResponse else {
             return
         }
         
         let startDate = requests[request] ?? Date()
+        let endDate = Date()
+        let timeInterval = endDate.timeIntervalSince(startDate)
         
-        if data == nil && error == nil && response == nil {
-            if !logsOutgoingRequest {
-                return
-            }
-            
-            let components = Calendar.current.dateComponents([.second, .minute, .hour], from: startDate)
-            let date = String(format: "[%02ld:%02ld:%02ld]", components.hour!, components.minute!, components.second!) //swiftlint:disable:this force_unwrapping
-            
-            // Normalize host
-            var host = request.url?.host ?? ""
-            host = host.isEmpty ? "localhost" : host
-            
-            // Normalize path
-            var path = request.url?.path ?? ""
-            path = path.isEmpty ? "/" : path
-            
-            // Normalize query
-            let query = request.url?.query ?? ""
-            
-            // Normalize headers
-            var headers = request.allHTTPHeaderFields ?? [:]
-            headers.removeValue(forKey: "Host")
-            headers.removeValue(forKey: "host")
-            
-            // Normalize body
-            let body = String(data: request.httpBody ?? Data(), encoding: .utf8) ?? ""
-            
-            // Log Build
-            var logData = ""
-            logData += String(format: "%@ %@ %@\n", date, request.httpMethod?.uppercased() ?? "GET", path)
+        
+        let components = Calendar.current.dateComponents([.second, .minute, .hour], from: startDate)
+        let date = String(format: "[%02ld:%02ld:%02ld]", components.hour!, components.minute!, components.second!) //swiftlint:disable:this force_unwrapping
+
+        // Normalize host
+        var host = request.url?.host ?? ""
+        host = host.isEmpty ? "localhost" : host
+        
+        // Normalize path
+        var path = request.url?.path ?? ""
+        path = path.isEmpty ? "/" : path
+        
+        // Normalize query
+        let query = request.url?.query ?? ""
+        
+        // Normalize headers
+        var requestHeaders = request.allHTTPHeaderFields ?? [:]
+        var responseHeaders = response.allHeaderFields
+        requestHeaders.removeValue(forKey: "Host")
+        responseHeaders.removeValue(forKey: "Host")
+        
+        // Normalize body
+        let contentType = response.allHeaderFields["Content-Type"] as? String ?? "application/octet-stream"
+
+        // Log Basic Info
+        var logData = ""
+        logData += String(format: "%@ %@ %@\n", date, request.httpMethod?.uppercased() ?? "GET", path)
+        logData += "Host: \(host)\n"
+        
+        if logLevel >= .verbose {
             logData += query.isEmpty ? "" : "Query: \(query)\n"
-            logData += "Host: \(host)\n"
-            logData += "Status: Pending\n"
-            
-            if logLevel >= .verbose && !headers.isEmpty {
-                logData += "\n"
-                logData += "Headers:\n"
-                logData += indent(headers.compactMap({ "\($0.key): \($0.value)" }).joined(separator: "\n"))
-                logData += "\n"
-            }
-            
-            if logLevel >= .all && !body.isEmpty {
-                logData += "Body:\n"
-                logData += indent(body)
-            }
-            
-            // Log Message
-            logMessage(logData)
+        }
+        
+        // Log Status Code
+        if let error = error as? URLError, error.code == .cancelled {
+            logData += "Status: \(response.statusCode) CANCELLED"
+            logData += "\n"
         }
         else {
-            guard let response = response as? HTTPURLResponse else {
-                return
-            }
-            
-            let components = Calendar.current.dateComponents([.second, .minute, .hour], from: startDate)
-            let date = String(format: "[%02ld:%02ld:%02ld]", components.hour!, components.minute!, components.second!) //swiftlint:disable:this force_unwrapping
-            
-            let endDate = Date()
-            let timeInterval = endDate.timeIntervalSince(startDate)
-            
-            // Normalize host
-            var host = request.url?.host ?? ""
-            host = host.isEmpty ? "localhost" : host
-            
-            // Normalize path
-            var path = request.url?.path ?? ""
-            path = path.isEmpty ? "/" : path
-            
-            // Normalize query
-            let query = request.url?.query ?? ""
-            
-            // Normalize headers
-            var headers = response.allHeaderFields
-            headers.removeValue(forKey: "Host")
-            headers.removeValue(forKey: "host")
-            
-            // Normalize body
-            let contentType = response.allHeaderFields["Content-Type"] as? String ?? "application/octet-stream"
-
-            // Log Build
-            var logData = ""
-            logData += String(format: "%@ %@ %@\n", date, request.httpMethod?.uppercased() ?? "GET", path)
-            logData += query.isEmpty ? "" : "Query: \(query)\n"
-            logData += "Host: \(host)\n"
-            logData += "Status: \(response.statusCode == 200 ? "OK" : HTTPURLResponse.localizedString(forStatusCode: response.statusCode).uppercased())\n"
-            logData += "Status Code: \(response.statusCode)\n"
-            logData += "Elapsed Time: \(String(format: "%.2fs", timeInterval))\n"
-            
-            if logLevel >= .verbose && !headers.isEmpty {
-                logData += "\n"
-                logData += "Headers:\n"
-                logData += indent(headers.compactMap({ "\($0.key): \($0.value)" }).joined(separator: "\n"))
-                logData += "\n"
-            }
-            
-            if logLevel >= .all, let body = data, !body.isEmpty {
-                logData += "\nBody \(contentType):\n"
-                
-                if contentType.starts(with: "text") {
-                    let decodedBody = String(data: body, encoding: .utf8) ?? String(data: body, encoding: .ascii) ?? ""
-                    logData += decodedBody.isEmpty ? "" : indent(decodedBody)
-                }
-                else if contentType.starts(with: "image") {
-                    logData += indent(body.base64EncodedString())
-                }
-                else if contentType.starts(with: "application/octet-stream") {
-                    logData += indent(body.base64EncodedString())
-                }
-                else {
-                    logData += indent(body.base64EncodedString())
-                }
-            }
-            
-            // Log Message
-            logMessage(logData)
+            logData += "Status: \(response.statusCode) \(response.statusCode == 200 ? "OK" : HTTPURLResponse.localizedString(forStatusCode: response.statusCode).uppercased())"
+            logData += "\n"
         }
         
-        requests.removeValue(forKey: request)
+        // Log Elapsed Time
+        logData += "Elapsed Time: \(String(format: "%.2fs", timeInterval))"
+        logData += "\n"
+        
+        if let error = error {
+            logData += error.localizedDescription
+            logData += "\n"
+        }
+        
+        if logLevel >= .trace && !requestHeaders.isEmpty {
+            logData += "\n"
+            logData += "Headers:\n"
+            logData += indent(requestHeaders.compactMap({ "\($0.key): \($0.value)" }).joined(separator: "\n"))
+            logData += "\n"
+        }
+        
+        if logLevel >= .verbose {
+            let body = String(data: request.httpBody ?? Data(), encoding: .utf8) ?? ""
+            
+            if !body.isEmpty {
+                logData += "Body:\n"
+                logData += indent(body)
+                logData += "\n"
+            }
+        }
+        
+        if logLevel >= .all && !responseHeaders.isEmpty {
+            logData += "\n"
+            logData += "Response Headers:\n"
+            logData += indent(responseHeaders.compactMap({ "\($0.key): \($0.value)" }).joined(separator: "\n"))
+            logData += "\n"
+        }
+        
+        if logLevel >= .trace, let body = data, !body.isEmpty {
+            logData += "\n"
+            logData += "Response Body:\n"
+            
+            if contentType.starts(with: "text") {
+                let decodedBody = String(data: body, encoding: .utf8) ?? String(data: body, encoding: .ascii) ?? ""
+                logData += decodedBody.isEmpty ? "" : indent(decodedBody)
+            }
+            else if contentType.starts(with: "image") {
+                logData += indent(body.base64EncodedString())
+            }
+            else if contentType.starts(with: "application/octet-stream") {
+                logData += indent(body.base64EncodedString())
+            }
+            else {
+                logData += indent(body.base64EncodedString())
+            }
+        }
+        
+        // Log Message
+        logMessage(logData)
     }
     
     private func logMessage(_ message: String) {
         print("\n")
-        print("\n")
-        print("**********************************")
-        print("\n")
+        print("**********************************\n")
         
         #if USE_OS_LOG
         if logLevel != .none {
@@ -193,9 +172,7 @@ extension RequestLogger {
         }
         #endif
         
-        print("\n")
         print("**********************************")
-        print("\n")
         print("\n")
     }
     

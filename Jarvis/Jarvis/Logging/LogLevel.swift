@@ -14,16 +14,40 @@ public enum LogLevel: Int {
     /// No logging - Logging disabled
     case none
     
-    /// Simple logging - Outgoing Request method, and url is logged
-    /// Simple logging - Incoming Response method, and url is logged
+    /// Request  - method
+    ///          - url
+    ///
+    /// Response - statusCode
+    ///          - error
     case simple
     
-    /// Verbose logging - Outgoing Request method, url, headers, and parameters is logged
-    /// Verbose logging - Incoming Response method, url, headers, and parameters is logged
+    /// Request  - method
+    ///          - url
+    ///          - parameters
+    ///
+    /// Response - statusCode
+    ///          - error
     case verbose
     
-    /// All logging - Outgoing Request method, url, headers, parameters, and body is logged
-    /// All logging - Incoming Response method, url, headers, parameters, and body is logged
+    /// Request  - method
+    ///          - url
+    ///          - headers
+    ///          - parameters
+    ///
+    /// Response - statusCode
+    ///          - body
+    ///          - error
+    case trace
+    
+    /// Request  - method
+    ///          - url
+    ///          - headers
+    ///          - parameters
+    ///
+    /// Response - statusCode
+    ///          - headers
+    ///          - body
+    ///          - error
     case all
 }
 

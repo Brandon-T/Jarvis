@@ -13,19 +13,7 @@ import os
 class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        Client.default.requestInterceptor = RequestLogger(.simple)
-        Client.default.task(endpoint: Endpoint<String>(.GET, "https://google.ca/hello",
-                                                       parameters: .query(["test":"abc", "test2": "meh"]),
-                                                       headers: ["X-Request-ID":"a", "Accept": "*/*"])).then { _ in
-        }
-        .catch { _ in
-                print("Error")
-        }
-        
-        return;
-        
-        
+
         /// Handling session renewal..
         /// Globally intercepting all requests for modification or logging..
         Client.default.requestInterceptor = BasicRequestInterceptor(
