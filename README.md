@@ -339,3 +339,27 @@ public class CustomRequestInterceptor<Token>: RequestInterceptor {
 
 Client.default.requestInterceptor = CustomRequestInterceptor()
 ```
+
+Logging Requests:
+```Swift
+let loggingInterceptor = RequestLogger(.simple) /// Logs with simple, verbose, trace, all.. format.
+Client.default.requestInterceptor = MultiRequestInterceptor([loggingInterceptor, customInterceptor, basicInterceptor])
+```
+
+Advanced Logging Requests (Request Log Controller):
+```Swift
+let loggingInterceptor = RequestLogger(.simple) /// Logs with simple, verbose, trace, all.. format.
+Client.default.requestInterceptor = MultiRequestInterceptor([loggingInterceptor, customInterceptor, basicInterceptor])
+
+let loggingController = RequestLogViewController(loggingInterceptor)
+let navigationController = UINavigationController(rootViewController: loggingController)
+self.present(navigationController, animated: true, completion: nil)
+```
+
+![](https://i.imgur.com/EZr4YfD.png)
+
+![](https://i.imgur.com/9cwlarl.png)
+
+![](https://i.imgur.com/2ISqE17.png)
+
+![](https://i.imgur.com/GLg8TXJ.png)
