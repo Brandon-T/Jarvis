@@ -17,6 +17,8 @@
 		5E2BA07122A9A73100E009DC /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F6C2279E8D000247E68 /* Endpoint.swift */; };
 		5E2BA07222A9A73100E009DC /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8BF6CB227F540100E308C8 /* Configuration.swift */; };
 		5E2BA07322A9A73400E009DC /* Jarvis.h in Headers */ = {isa = PBXBuildFile; fileRef = 5EC66F432279E89800247E68 /* Jarvis.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5E47E45722BCA521002AE5BB /* RequestLogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E47E45522BCA521002AE5BB /* RequestLogViewController.swift */; };
+		5E47E45822BCA521002AE5BB /* RequestLogDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E47E45622BCA521002AE5BB /* RequestLogDetailsViewController.swift */; };
 		5E8BF6CC227F540100E308C8 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8BF6CB227F540100E308C8 /* Configuration.swift */; };
 		5EA9F1E522BA849700BD3811 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1E422BA849700BD3811 /* LogLevel.swift */; };
 		5EA9F1E622BA849700BD3811 /* LogLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9F1E422BA849700BD3811 /* LogLevel.swift */; };
@@ -38,6 +40,8 @@
 /* Begin PBXFileReference section */
 		5E0D4F5D22B3FA12000587A0 /* Security.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Security.swift; sourceTree = "<group>"; };
 		5E2BA05C22A9A02C00E009DC /* Jarvis.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Jarvis.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E47E45522BCA521002AE5BB /* RequestLogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestLogViewController.swift; sourceTree = "<group>"; };
+		5E47E45622BCA521002AE5BB /* RequestLogDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestLogDetailsViewController.swift; sourceTree = "<group>"; };
 		5E8BF6CB227F540100E308C8 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		5EA9F1D622B930C800BD3811 /* Alamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Alamofire.framework; path = ../Carthage/Build/iOS/Alamofire.framework; sourceTree = "<group>"; };
 		5EA9F1D822B930D500BD3811 /* Alamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Alamofire.framework; path = ../Carthage/Build/Mac/Alamofire.framework; sourceTree = "<group>"; };
@@ -74,9 +78,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5E47E45422BCA504002AE5BB /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				5E47E45522BCA521002AE5BB /* RequestLogViewController.swift */,
+				5E47E45622BCA521002AE5BB /* RequestLogDetailsViewController.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		5E8BF6CA227E361200E308C8 /* Logging */ = {
 			isa = PBXGroup;
 			children = (
+				5E47E45422BCA504002AE5BB /* UI */,
 				5EA9F1E422BA849700BD3811 /* LogLevel.swift */,
 				5EA9F1EA22BA853F00BD3811 /* RequestLogger.swift */,
 			);
@@ -319,8 +333,10 @@
 				5EA9F1EE22BA857000BD3811 /* RequestInterceptor.swift in Sources */,
 				5EA9F1E822BA84CD00BD3811 /* MultiRequestInterceptor.swift in Sources */,
 				5EA9F1E522BA849700BD3811 /* LogLevel.swift in Sources */,
+				5E47E45822BCA521002AE5BB /* RequestLogDetailsViewController.swift in Sources */,
 				5EC66F6F2279E8D000247E68 /* Client.swift in Sources */,
 				5EA9F1EB22BA853F00BD3811 /* RequestLogger.swift in Sources */,
+				5E47E45722BCA521002AE5BB /* RequestLogViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

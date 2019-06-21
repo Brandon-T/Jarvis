@@ -39,8 +39,13 @@ class ViewController: UIViewController {
         })
         
         
+        let logger = RequestLogger(.simple)
+        Client.default.requestInterceptor = logger
         
-        Client.default.requestInterceptor = RequestLogger(.simple)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let navigationController = UINavigationController(rootViewController: RequestLogViewController(logger))
+            self.present(navigationController, animated: true, completion: nil)
+        }
         
         Client.default.task(endpoint: Endpoint<String>(.GET, "https://google.ca"))
         .retry(2)
@@ -48,7 +53,7 @@ class ViewController: UIViewController {
             print(res)
         }
         .then { result -> Request<String> in
-            Client.default.task(endpoint: Endpoint<String>(.GET, "https://imgur.com"))
+            Client.default.task(endpoint: Endpoint<String>(.GET, "https://i.imgur.com/l6VDOPe.jpg"))
         }
         .then { result -> Request<String> in
             Client.default.task(endpoint: Endpoint<String>(.GET, "https://stackoverflow.com"))
