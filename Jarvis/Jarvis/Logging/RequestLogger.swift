@@ -13,6 +13,7 @@ public final class RequestLogger: RequestInterceptor {
     public weak var client: Client?
     private var requests: [URLRequest: Date]
     private let logLevel: LogLevel
+    private let lock: NSRecursiveLock
     
     public let requestLogs: RequestLogSubscriber<[RequestPacket]>
     
@@ -20,12 +21,15 @@ public final class RequestLogger: RequestInterceptor {
         self.client = nil
         self.requests = [:]
         self.logLevel = logLevel
+        self.lock = NSRecursiveLock()
         self.requestLogs = RequestLogSubscriber<[RequestPacket]>([])
     }
     
     public func willLaunchRequest<T>(_ request: inout URLRequest, for endpoint: Endpoint<T>) {
         if logLevel != .none {
+            lock.lock()
             requests.updateValue(Date(), forKey: request)
+            lock.unlock()
         }
         log(request: request, for: endpoint)
     }
@@ -46,7 +50,11 @@ extension RequestLogger {
             return
         }
         
-        defer { requests.removeValue(forKey: request); }
+        defer {
+            lock.lock()
+            requests.removeValue(forKey: request)
+            lock.unlock()
+        }
         
         let startDate = requests[request] ?? Date()
         let endDate = Date()
@@ -152,12 +160,14 @@ extension RequestLogger {
         // Storage
         let packet = RequestPacket(startDate: startDate, endDate: endDate, request: request, response: response, responseData: data, error: error)
         
+        lock.lock()
         var requestLogs = self.requestLogs.value
         requestLogs.insert(packet, at: 0)
         if requestLogs.count > 25 {
             requestLogs.removeLast()
         }
         self.requestLogs.value = requestLogs
+        lock.unlock()
     }
     
     // MARK: - Private

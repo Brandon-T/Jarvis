@@ -6,16 +6,16 @@
 //  Copyright © 2019 SO. All rights reserved.
 //
 
+#if os(iOS)
 import Foundation
 import UIKit
-import Jarvis
 
-class RequestLogViewController: UIViewController {
+public class RequestLogViewController: UIViewController {
     private var packets = [RequestLogger.RequestPacket]()
     private var packetObserver: RequestLogger.RequestLogObserver?
     private let tableView = UITableView(frame: .zero, style: .grouped)
     
-    init(_ logger: RequestLogger) {
+    public init(_ logger: RequestLogger) {
         super.init(nibName: nil, bundle: nil)
         
         self.packetObserver = logger.requestLogs.observe({ [weak self] new, _ in
@@ -37,27 +37,40 @@ class RequestLogViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         
+        title = "Request Log Viewer"
+        
+        view.backgroundColor = .white
         tableView.register(RequestLogCell.self, forCellReuseIdentifier: String(describing: RequestLogCell.self))
         
         view.addSubview(tableView)
-        NSLayoutConstraint.activate([
-            tableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            tableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ])
-        tableView.translatesAutoresizingMaskIntoConstraints = false
+        if #available(iOS 11.0, *) {
+            NSLayoutConstraint.activate([
+                tableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+                tableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+                tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            ])
+        }
+        else {
+            NSLayoutConstraint.activate([
+                tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
+                tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
+                tableView.topAnchor.constraint(equalTo: view.topAnchor),
+                tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+        }
         
-        self.tableView.delegate = self
-        self.tableView.dataSource = self
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.delegate = self
+        tableView.dataSource = self
     }
 }
 
 extension RequestLogViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let detailsController = RequestLogDetailsViewController()
         detailsController.requestLog = self.packets[indexPath.row]
         
@@ -71,24 +84,24 @@ extension RequestLogViewController: UITableViewDelegate {
 }
 
 extension RequestLogViewController: UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
+    public func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return packets.count
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
     
-    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+    public func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return 100.0
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: RequestLogCell.self), for: indexPath) as! RequestLogCell //swiftlint:disable:this force_unwrapping
+    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: RequestLogCell.self), for: indexPath) as! RequestLogCell //swiftlint:disable:this force_cast
         
         cell.setRequest(packets[indexPath.row])
         return cell
@@ -173,7 +186,7 @@ extension RequestLogViewController {
         }
     }
     
-    class RequestLogCell: UITableViewCell {
+    private class RequestLogCell: UITableViewCell {
         private let contentStackView = UIStackView(frame: .zero)
         private let stackView = UIStackView(frame: .zero)
         private let statusView = RequestLogStatusView(frame: .zero)
@@ -258,3 +271,4 @@ extension RequestLogViewController {
         }
     }
 }
+#endif

@@ -6,49 +6,78 @@
 //  Copyright © 2019 SO. All rights reserved.
 //
 
+#if os(iOS)
 import Foundation
 import UIKit
-import Jarvis
 
-class RequestLogDetailsViewController: UIViewController {
+public class RequestLogDetailsViewController: UIViewController {
+    
+    public init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     private let tabBar = TabBar(tabTitles: ["Request", "Response"])
     private let infoView = UITextView(frame: .zero)
     
-    var requestLog: RequestLogger.RequestPacket? {
+    public var requestLog: RequestLogger.RequestPacket? {
         didSet {
             updateInfoView(index: 0)
         }
     }
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
+        
+        title = "Request Log Details"
         
         view.backgroundColor = .white
         infoView.showsVerticalScrollIndicator = true
         infoView.isEditable = false
+        infoView.isSelectable = false
+        infoView.textContainerInset = UIEdgeInsets(top: 25.0, left: 20.0, bottom: 20.0, right: 20.0)
         
         view.addSubview(tabBar)
         view.addSubview(infoView)
-        NSLayoutConstraint.activate([
-            tabBar.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            tabBar.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            tabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tabBar.heightAnchor.constraint(equalToConstant: 60.0),
-            
-            infoView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            infoView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            infoView.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
-            infoView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ])
+        if #available(iOS 11.0, *) {
+            NSLayoutConstraint.activate([
+                tabBar.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+                tabBar.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+                tabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                tabBar.heightAnchor.constraint(equalToConstant: 60.0),
+                
+                infoView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+                infoView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+                infoView.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
+                infoView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            ])
+        }
+        else {
+            NSLayoutConstraint.activate([
+                tabBar.leftAnchor.constraint(equalTo: view.leftAnchor),
+                tabBar.rightAnchor.constraint(equalTo: view.rightAnchor),
+                tabBar.topAnchor.constraint(equalTo: view.topAnchor),
+                tabBar.heightAnchor.constraint(equalToConstant: 60.0),
+                
+                infoView.leftAnchor.constraint(equalTo: view.leftAnchor),
+                infoView.rightAnchor.constraint(equalTo: view.rightAnchor),
+                infoView.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
+                infoView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+        }
         
         tabBar.translatesAutoresizingMaskIntoConstraints = false
         infoView.translatesAutoresizingMaskIntoConstraints = false
         
         tabBar.addEventHandler(runnable: { [weak self] index in
-            self?.tabBar.enableTabs()
+            guard let self = self else { return }
+            self.tabBar.enableTabs()
             
-            self?.infoView.text = ""
-            self?.updateInfoView(index: index)
+            self.infoView.text = ""
+            self.updateInfoView(index: index)
         })
     }
     
@@ -59,7 +88,7 @@ class RequestLogDetailsViewController: UIViewController {
         ])
     }
     
-    private func updateInfoView(index: Int) {
+    private func updateInfoView(index: Int) { //swiftlint:disable:this function_body_length
         guard let requestLog = requestLog else {
             return
         }
@@ -70,7 +99,7 @@ class RequestLogDetailsViewController: UIViewController {
             let date = String(format: "[%02ld:%02ld:%02ld]", components.hour!, components.minute!, components.second!) //swiftlint:disable:this force_unwrapping
             
             let logData = NSMutableAttributedString(string: "", attributes: [
-                .font: UIFont.systemFont(ofSize: 12.0, weight: .medium),
+                .font: UIFont.systemFont(ofSize: 12.0, weight: .regular),
                 .foregroundColor: UIColor.lightGray
             ])
             
@@ -94,22 +123,39 @@ class RequestLogDetailsViewController: UIViewController {
             logData.append(attributedText("\(path)\n", weight: .bold, size: 12.0, colour: .black))
             
             logData.append(attributedText("Host: ", weight: .bold, size: 12.0, colour: .orange))
-            logData.append(attributedText("\(host)\n", weight: .medium, size: 12.0, colour: .black))
+            logData.append(attributedText("\(host)\n", weight: .regular, size: 12.0, colour: .black))
             
             if !query.isEmpty {
                 logData.append(attributedText("Query: ", weight: .bold, size: 12.0, colour: .orange))
-                logData.append(attributedText("\(query)\n", weight: .medium, size: 12.0, colour: .black))
+                logData.append(attributedText("\(query)\n", weight: .regular, size: 12.0, colour: .black))
             }
             
-            logData.append(attributedText("\n", weight: .medium, size: 12.0, colour: .black))
+            logData.append(attributedText("\n\n", weight: .regular, size: 12.0, colour: .black))
             
-            logData.append(attributedText("Headers:\n", weight: .bold, size: 12.0, colour: .orange))
-            logData.append(attributedText("\(indent(requestHeaders.compactMap({ "\($0.key): \($0.value)" }).joined(separator: "\n")))\n\n", weight: .medium, size: 12.0, colour: .black))
+            // Log Headers
+            if !requestHeaders.isEmpty {
+                logData.append(attributedText("Headers:\n", weight: .bold, size: 12.0, colour: .orange))
+                
+                requestHeaders.compactMap({ header -> NSAttributedString in
+                    let key = attributedText(indent("\(header.key): "), weight: .bold, size: 12.0, colour: .black)
+                    let value = attributedText(header.value, weight: .regular, size: 12.0, colour: .black)
+                    
+                    let text = NSMutableAttributedString(attributedString: key)
+                    text.append(value)
+                    return text
+                }).forEach({
+                    logData.append($0)
+                    logData.append(attributedText("\n", weight: .regular, size: 12.0, colour: .black))
+                })
+                
+                logData.append(attributedText("\n", weight: .regular, size: 12.0, colour: .black))
+            }
             
+            // Log Body
             let body = String(data: requestLog.request.httpBody ?? Data(), encoding: .utf8) ?? ""
             if !body.isEmpty {
                 logData.append(attributedText("Body:\n", weight: .bold, size: 12.0, colour: .orange))
-                logData.append(attributedText("\(indent(body))\n\n", weight: .medium, size: 12.0, colour: .black))
+                logData.append(attributedText("\(indent(body))\n\n", weight: .regular, size: 12.0, colour: .black))
             }
             
             infoView.attributedText = logData
@@ -123,7 +169,7 @@ class RequestLogDetailsViewController: UIViewController {
             let date = String(format: "[%02ld:%02ld:%02ld]", components.hour!, components.minute!, components.second!) //swiftlint:disable:this force_unwrapping
             
             let logData = NSMutableAttributedString(string: "", attributes: [
-                .font: UIFont.systemFont(ofSize: 12.0, weight: .medium),
+                .font: UIFont.systemFont(ofSize: 12.0, weight: .regular),
                 .foregroundColor: UIColor.lightGray
             ])
             
@@ -147,49 +193,80 @@ class RequestLogDetailsViewController: UIViewController {
             logData.append(attributedText("\(path)\n", weight: .bold, size: 12.0, colour: .black))
             
             logData.append(attributedText("Host: ", weight: .bold, size: 12.0, colour: .orange))
-            logData.append(attributedText("\(host)\n", weight: .medium, size: 12.0, colour: .black))
+            logData.append(attributedText("\(host)\n", weight: .regular, size: 12.0, colour: .black))
             
-            logData.append(attributedText("\n", weight: .medium, size: 12.0, colour: .black))
+            logData.append(attributedText("\n", weight: .regular, size: 12.0, colour: .black))
             
             // Log Status Code
             if let error = requestLog.error as? URLError, error.code == .cancelled {
                 logData.append(attributedText("Status: ", weight: .bold, size: 12.0, colour: .orange))
-                logData.append(attributedText("\(requestLog.response.statusCode) CANCELLED\n\n", weight: .medium, size: 12.0, colour: .black))
+                logData.append(attributedText("\(requestLog.response.statusCode) CANCELLED\n\n", weight: .regular, size: 12.0, colour: .black))
             }
             else {
                 logData.append(attributedText("Status: ", weight: .bold, size: 12.0, colour: .orange))
-                logData.append(attributedText("\(requestLog.response.statusCode) \(requestLog.response.statusCode == 200 ? "OK" : HTTPURLResponse.localizedString(forStatusCode: requestLog.response.statusCode).uppercased())\n\n", weight: .medium, size: 12.0, colour: .black))
+                logData.append(attributedText("\(requestLog.response.statusCode) \(requestLog.response.statusCode == 200 ? "OK" : HTTPURLResponse.localizedString(forStatusCode: requestLog.response.statusCode).uppercased())\n\n", weight: .regular, size: 12.0, colour: .black))
             }
             
             logData.append(attributedText("Elapsed Time: ", weight: .bold, size: 12.0, colour: .orange))
-            logData.append(attributedText("\(String(format: "%.3fs", timeInterval))\n", weight: .medium, size: 12.0, colour: .black))
+            logData.append(attributedText("\(String(format: "%.3fs", timeInterval))\n\n", weight: .regular, size: 12.0, colour: .black))
             
+            // Log Headers
             logData.append(attributedText("Headers:\n", weight: .bold, size: 12.0, colour: .orange))
-            logData.append(attributedText("\(indent(responseHeaders.compactMap({ "\($0.key): \($0.value)" }).joined(separator: "\n")))\n\n", weight: .medium, size: 12.0, colour: .black))
+            responseHeaders.compactMap({ header -> NSAttributedString in
+                let key = attributedText(indent("\(header.key): "), weight: .bold, size: 12.0, colour: .black)
+                let value = attributedText(header.value as? String ?? "", weight: .regular, size: 12.0, colour: .black)
+                
+                let text = NSMutableAttributedString(attributedString: key)
+                text.append(value)
+                return text
+            }).forEach({
+                logData.append($0)
+                logData.append(attributedText("\n", weight: .regular, size: 12.0, colour: .black))
+            })
+            logData.append(attributedText("\n", weight: .regular, size: 12.0, colour: .black))
             
+            // Log Body
             let body = requestLog.responseData ?? Data()
             if !body.isEmpty {
-                var bodyData = ""
+                logData.append(attributedText("Body:\n", weight: .bold, size: 12.0, colour: .orange))
+                
                 if contentType.starts(with: "text") {
                     let decodedBody = String(data: body, encoding: .utf8) ?? String(data: body, encoding: .ascii) ?? ""
-                    bodyData += decodedBody.isEmpty ? "" : indent(decodedBody)
+                    let bodyData = decodedBody.isEmpty ? "" : indent(decodedBody)
+                    logData.append(attributedText("\(bodyData)\n\n", weight: .regular, size: 12.0, colour: .black))
                 }
                 else if contentType.starts(with: "image") {
-                    bodyData += indent(body.base64EncodedString())
+                    if let bodyData = UIImage(data: body) {
+                        let attachment = NSTextAttachment()
+                        attachment.image = bodyData
+                        attachment.bounds = scaleImage(image: bodyData, width: view.bounds.width - 50.0)
+                        
+                        logData.append(attributedText("    ", weight: .regular, size: 12.0, colour: .black))
+                        logData.append(NSAttributedString(attachment: attachment))
+                        logData.append(attributedText("\n\n", weight: .regular, size: 12.0, colour: .black))
+                    }
+                    else {
+                        let bodyData = indent(body.base64EncodedString())
+                        logData.append(attributedText("\(bodyData)\n\n", weight: .regular, size: 12.0, colour: .black))
+                    }
                 }
                 else if contentType.starts(with: "application/octet-stream") {
-                    bodyData += indent(body.base64EncodedString())
+                    let bodyData = indent(body.base64EncodedString())
+                    logData.append(attributedText("\(bodyData)\n\n", weight: .regular, size: 12.0, colour: .black))
                 }
                 else {
-                    bodyData += indent(body.base64EncodedString())
+                    let bodyData = indent(body.base64EncodedString())
+                    logData.append(attributedText("\(bodyData)\n\n", weight: .regular, size: 12.0, colour: .black))
                 }
-                
-                logData.append(attributedText("Body:\n", weight: .bold, size: 12.0, colour: .orange))
-                logData.append(attributedText("\(bodyData)\n\n", weight: .medium, size: 12.0, colour: .black))
                 
                 infoView.attributedText = logData
             }
         }
+    }
+    
+    private func scaleImage(image: UIImage, width: CGFloat) -> CGRect {
+        let ratio = image.size.width / image.size.height
+        return CGRect(x: 0.0, y: 0.0, width: width, height: ratio * width)
     }
     
     private func indent(_ input: String, amount: Int = 4) -> String {
@@ -199,11 +276,12 @@ class RequestLogDetailsViewController: UIViewController {
 }
 
 extension RequestLogDetailsViewController {
-    final class TabBar: UIView {
+    private final class TabBar: UIView {
         private var tabs: [TabButton] = []
         private var titles: [String]
         private let stackView = UIStackView(frame: .zero)
         private let verticalStackView = UIStackView(frame: .zero)
+        private let separator = UIView(frame: .zero)
         private var eventHandlers = [(Int) -> Void]()
         
         init(tabTitles: [String]) {
@@ -234,10 +312,13 @@ extension RequestLogDetailsViewController {
                 verticalStackView.leftAnchor.constraint(equalTo: leftAnchor),
                 verticalStackView.rightAnchor.constraint(equalTo: rightAnchor),
                 verticalStackView.topAnchor.constraint(equalTo: topAnchor),
-                verticalStackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+                verticalStackView.bottomAnchor.constraint(equalTo: bottomAnchor),
+                
+                separator.heightAnchor.constraint(equalToConstant: 1.0)
             ])
             
             verticalStackView.addArrangedSubview(stackView)
+            verticalStackView.addArrangedSubview(separator)
         }
         
         @available(*, unavailable)
@@ -252,6 +333,8 @@ extension RequestLogDetailsViewController {
             
             verticalStackView.axis = .vertical
             verticalStackView.translatesAutoresizingMaskIntoConstraints = false
+            
+            separator.backgroundColor = .lightGray
         }
         
         func setActiveTab(index: Int) {
@@ -309,8 +392,8 @@ extension RequestLogDetailsViewController {
             addSubview(borderView)
             contentEdgeInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: borderThickness, right: 0.0)
             
-            borderView.backgroundColor = .red
-            setTitleColor(.blue, for: .normal)
+            borderView.backgroundColor = #colorLiteral(red: 0.01568627451, green: 0.8509803922, blue: 1, alpha: 1)
+            setTitleColor(#colorLiteral(red: 0, green: 0.4588235294, blue: 0.7019607843, alpha: 1), for: .normal)
             titleLabel?.font = .systemFont(ofSize: 17.0, weight: .bold)
         }
         
@@ -335,3 +418,4 @@ extension RequestLogDetailsViewController {
         }
     }
 }
+#endif

@@ -14,8 +14,6 @@
 		5EC66F14227798F300247E68 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EC66F12227798F300247E68 /* Main.storyboard */; };
 		5EC66F16227798F500247E68 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5EC66F15227798F500247E68 /* Assets.xcassets */; };
 		5EC66F19227798F500247E68 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EC66F17227798F500247E68 /* LaunchScreen.storyboard */; };
-		5ED0E5C922BC001500F88B42 /* RequestLogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED0E5C822BC001500F88B42 /* RequestLogViewController.swift */; };
-		5ED0E5CB22BC177300F88B42 /* RequestLogDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED0E5CA22BC177300F88B42 /* RequestLogDetailsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,8 +39,6 @@
 		5EC66F15227798F500247E68 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5EC66F18227798F500247E68 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5EC66F1A227798F500247E68 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5ED0E5C822BC001500F88B42 /* RequestLogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLogViewController.swift; sourceTree = "<group>"; };
-		5ED0E5CA22BC177300F88B42 /* RequestLogDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestLogDetailsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,8 +75,6 @@
 			children = (
 				5EC66F0E227798F300247E68 /* AppDelegate.swift */,
 				5EC66F10227798F300247E68 /* ViewController.swift */,
-				5ED0E5C822BC001500F88B42 /* RequestLogViewController.swift */,
-				5ED0E5CA22BC177300F88B42 /* RequestLogDetailsViewController.swift */,
 				5EC66F12227798F300247E68 /* Main.storyboard */,
 				5EC66F15227798F500247E68 /* Assets.xcassets */,
 				5EC66F17227798F500247E68 /* LaunchScreen.storyboard */,
@@ -161,10 +155,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5ED0E5CB22BC177300F88B42 /* RequestLogDetailsViewController.swift in Sources */,
 				5EC66F11227798F300247E68 /* ViewController.swift in Sources */,
 				5EC66F0F227798F300247E68 /* AppDelegate.swift in Sources */,
-				5ED0E5C922BC001500F88B42 /* RequestLogViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
