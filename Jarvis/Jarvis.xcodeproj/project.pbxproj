@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		5E0D4F5E22B3FA12000587A0 /* Security.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0D4F5D22B3FA12000587A0 /* Security.swift */; };
 		5E0D4F5F22B3FA12000587A0 /* Security.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0D4F5D22B3FA12000587A0 /* Security.swift */; };
+		5E2A934E22C1850D002EDFFD /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EA9F1D622B930C800BD3811 /* Alamofire.framework */; };
 		5E2BA06C22A9A72D00E009DC /* RuntimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F662279E8D000247E68 /* RuntimeError.swift */; };
 		5E2BA06D22A9A73100E009DC /* BasicRequestInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F682279E8D000247E68 /* BasicRequestInterceptor.swift */; };
 		5E2BA06E22A9A73100E009DC /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC66F692279E8D000247E68 /* Client.swift */; };
@@ -72,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E2A934E22C1850D002EDFFD /* Alamofire.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,6 +200,7 @@
 				5E2BA05822A9A02C00E009DC /* Sources */,
 				5E2BA05922A9A02C00E009DC /* Frameworks */,
 				5E2BA05A22A9A02C00E009DC /* Resources */,
+				5E2A934D22C1840B002EDFFD /* Carthage */,
 			);
 			buildRules = (
 			);
@@ -216,7 +219,8 @@
 				5EC66F3C2279E89800247E68 /* Sources */,
 				5EC66F3D2279E89800247E68 /* Frameworks */,
 				5EC66F3E2279E89800247E68 /* Resources */,
-				5E2BA07622A9B04300E009DC /* ShellScript */,
+				5E2BA07622A9B04300E009DC /* Swift Lint */,
+				5E2A934C22C183A7002EDFFD /* Carthage */,
 			);
 			buildRules = (
 			);
@@ -280,7 +284,47 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		5E2BA07622A9B04300E009DC /* ShellScript */ = {
+		5E2A934C22C183A7002EDFFD /* Carthage */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../Carthage/Build/iOS/Alamofire.framework",
+			);
+			name = Carthage;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/Alamofire.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
+		};
+		5E2A934D22C1840B002EDFFD /* Carthage */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../Carthage/Build/Mac/Alamofire.framework",
+			);
+			name = Carthage;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/Alamofire.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
+		};
+		5E2BA07622A9B04300E009DC /* Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -289,6 +333,7 @@
 			);
 			inputPaths = (
 			);
+			name = "Swift Lint";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -353,6 +398,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../Carthage/Build/Mac";
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "$(SRCROOT)/Jarvis/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -378,6 +424,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../Carthage/Build/Mac";
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "$(SRCROOT)/Jarvis/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -528,6 +575,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../Carthage/Build/iOS";
 				INFOPLIST_FILE = "$(SRCROOT)/Jarvis/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -551,6 +599,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../Carthage/Build/iOS";
 				INFOPLIST_FILE = "$(SRCROOT)/Jarvis/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
