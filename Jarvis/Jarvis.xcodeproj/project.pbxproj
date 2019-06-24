@@ -295,7 +295,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\n\ncommand -v swiftlint >/dev/null 2>&1 || { echo >&2 \"Please install SwiftLint via Homebrew or directly from https://github.com/realm/SwiftLint\"; exit 1; }\n\nswiftlint\n";
+			shellScript = "#!/bin/sh\n\n#command -v swiftlint >/dev/null 2>&1 || { echo >&2 \"Please install SwiftLint via Homebrew or directly from https://github.com/realm/SwiftLint\"; exit 1; }\n\n#swiftlint\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
