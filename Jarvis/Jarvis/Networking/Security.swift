@@ -11,8 +11,8 @@ import Foundation
 #if canImport(Alamofire)
 import Alamofire
 
-typealias CertificateEvaluator = PinnedCertificatesTrustEvaluator
-typealias PublicKeyEvaluator = PublicKeysTrustEvaluator
+public typealias CertificateEvaluator = PinnedCertificatesTrustEvaluator
+public typealias PublicKeyEvaluator = PublicKeysTrustEvaluator
 
 public class ClientTrustManager: ServerTrustManager {
     private var evaluateAllHosts: Bool
